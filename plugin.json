@@ -1,0 +1,23 @@
+{
+  "slug": "Prefabs",
+  "name": "Prefabs",
+  "version": "2.0.0",
+  "license": "MIT",
+  "brand": "ldlework",
+  "author": "ldlework",
+  "authorEmail": "dlacewell@gmail.com",
+  "authorUrl": "https://github.com/dustinlacewell",
+  "pluginUrl": "https://github.com/dustinlacewell/vcv-prefabs",
+  "manualUrl": "",
+  "sourceUrl": "",
+  "donateUrl": "",
+  "changelogUrl": "",
+  "modules": [
+    {
+      "slug": "Prefabs",
+      "name": "Prefabs",
+      "description": "A selection preset inserter for VCV Rack",
+      "tags": []
+    }
+  ]
+}

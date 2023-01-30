@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="64"
+   height="64"
+   viewBox="0 0 128 128"
+   version="1.1"
+   id="svg2655"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   sodipodi:docname="P.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview2657"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     showborder="true"
+     inkscape:zoom="14.638496"
+     inkscape:cx="21.074569"
+     inkscape:cy="29.647854"
+     inkscape:window-width="2560"
+     inkscape:window-height="1369"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g8544" />
+  <defs
+     id="defs2652" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     style="display:none">
+    <circle
+       style="fill:#10e73d;fill-opacity:1;stroke:#00f200;stroke-width:0;stroke-linecap:square;stroke-linejoin:bevel;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="color"
+       cx="32"
+       cy="32"
+       r="31"
+       inkscape:label="color" />
+    <circle
+       style="fill:#1f1f25;fill-opacity:1;stroke:#00f200;stroke-width:0;stroke-linecap:square;stroke-linejoin:bevel;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="circle8538"
+       cx="32"
+       cy="32"
+       r="31"
+       inkscape:label="cap" />
+  </g>
+  <g
+     inkscape:label="Layer 1 copy"
+     inkscape:groupmode="layer"
+     id="g8544">
+    <circle
+       style="display:none;fill:#ffffff;fill-opacity:1;stroke:#00f200;stroke-width:0;stroke-linecap:square;stroke-linejoin:bevel;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="circle8540"
+       cx="64.503616"
+       cy="64.503616"
+       inkscape:label="color"
+       r="63.50362" />
+    <path
+       id="circle8542"
+       style="display:inline;fill:#1f1f25;fill-opacity:1;fill-rule:nonzero;stroke:#00f200;stroke-width:0;stroke-linecap:square;stroke-linejoin:bevel;stroke-dasharray:none"
+       inkscape:label="cap"
+       d="m 64.503655,2.936481 c -34.025954,0 -61.56717,27.541214 -61.56717,61.567176 0,34.025936 27.541216,61.567123 61.56717,61.567123 34.025937,0 61.567115,-27.541187 61.567115,-61.567123 0,-34.025962 -27.541178,-61.567176 -61.567115,-61.567176 z m -13.77941,40.377946 h 23.597829 v 3.936959 h 7.873931 v 27.534783 h -3.936974 v 3.912969 H 58.598181 V 98.35999 H 46.811291 V 47.251386 h 3.912954 z m 7.873936,11.786899 V 66.912237 H 70.409089 V 55.101326 Z"
+       sodipodi:nodetypes="ssssscccccccccccccccccc" />
+    <path
+       id="rect8751"
+       style="display:none;fill:#00ff00;stroke:#00ff00;stroke-width:3.77952;stroke-linecap:square;stroke-linejoin:bevel"
+       d="m 49.185379,53.967293 h 6.011547 v 4.918538 h -6.011547 z"
+       inkscape:label="rect8751" />
+    <path
+       id="rect8755"
+       style="display:none;fill:#00ff00;stroke:#00ff00;stroke-width:3.77952;stroke-linecap:square;stroke-linejoin:bevel"
+       d="m 60.661968,46.452858 h 6.421425 v 4.918538 h -6.421425 z" />
+    <path
+       id="rect8757"
+       style="display:none;fill:#00ff00;stroke:#00ff00;stroke-width:3.77952;stroke-linecap:square;stroke-linejoin:bevel"
+       d="m 73.504822,54.240543 h 5.19179 v 6.011547 h -5.19179 z" />
+    <path
+       id="rect8759"
+       style="display:none;fill:#00ff00;stroke:#00ff00;stroke-width:3.77952;stroke-linecap:square;stroke-linejoin:bevel"
+       d="m 54.650421,45.223225 h 4.235408 v 3.005773 h -4.235408 z" />
+  </g>
+  <text
+     xml:space="preserve"
+     style="font-weight:bold;font-size:48px;font-family:'Nightmare Codehack';-inkscape-font-specification:'Nightmare Codehack Bold';text-align:center;text-anchor:middle;display:none;fill:#00ff01;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-linecap:square;stroke-linejoin:bevel"
+     x="32.960938"
+     y="38.930359"
+     id="text5477"><tspan
+       sodipodi:role="line"
+       id="tspan5475"
+       x="0"
+       y="0">p</tspan></text>
+</svg>
