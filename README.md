@@ -68,9 +68,13 @@ VCV Plugins can also provide prefabs. These are listed in the `Plugin Prefabs` m
 At the bottom of the menu, you will find your favorite modules. These modules can be pulled into the patch just like
 prefabs.
 
+<p align="center">
+<img src="favorites.gif">
+</p>
+
 Pressing `ctrl` will show all modules, not just the ones you have favorited.
 
 
 <p align="center">
-<img src="favorites.gif">
+<img src="modules.gif">
 </p>
