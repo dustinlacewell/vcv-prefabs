@@ -42,3 +42,11 @@ The widget can be moved, and will stay in the same position as you move the rack
 <p align="center">
 <img src="widget.gif" width="590">
 </p>
+
+## The Prefabs menu
+
+Right-clicking on the Prefabs widget will bring up a menu where you can access your prefabs and modules.
+
+<p align="center">
+<img src="context-menu.gif">
+</p>
