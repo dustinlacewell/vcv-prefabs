@@ -36,3 +36,9 @@ Towards the buttom, a button will show/hide the Prefabs Widget
 <p align="center">
 <img src="toggle.gif" width="590">
 </p>
+
+The widget can be moved, and will stay in the same position as you move the rack around.
+
+<p align="center">
+<img src="widget.gif" width="590">
+</p>
