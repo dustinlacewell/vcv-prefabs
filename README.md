@@ -93,3 +93,42 @@ Right-clicking on a module will bring up a menu where you can add it to your fav
 <img src="images/new-favorites.gif">
 </p>
 
+### Searching
+
+By typing into the search box, you can filter the prefabs and modules.
+
+<p align="center">
+<img src="images/search.gif">
+</p>
+
+# Settings
+
+Right-clicking the Prefabs module will bring up a menu where you can change some settings.
+
+## Search results
+
+You can control the number of results shown in the search box.
+
+<p align="center">
+<img src="images/results.gif">
+</p>
+
+## Widget color
+
+You can change the color of the Prefabs widget.
+
+<p align="center">
+<img src="images/color.gif">
+</p>
+
+## Disco mode
+
+Increasing disco speed above 0 will cause the widget color to change over time.
+
+<p align="center">
+<img src="images/disco.gif">
+</p>
+
+
+
+
