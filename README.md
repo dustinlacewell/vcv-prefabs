@@ -78,3 +78,12 @@ Pressing `ctrl` will show all modules, not just the ones you have favorited.
 <p align="center">
 <img src="modules.gif">
 </p>
+
+#### Adding favorites
+
+Right-clicking on a module will bring up a menu where you can add it to your favorites.
+
+<p align="center">
+<img src="new-favorites.gif">
+</p>
+
