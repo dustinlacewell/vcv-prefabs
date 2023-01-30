@@ -69,6 +69,10 @@ Below the tag list, there is a sub-menu `by module:` where your prefabs are orga
 
 VCV Plugins can also provide prefabs. These are listed in the `Plugin Prefabs` menu.
 
+<p align="center">
+<img src="images/plugins.gif">
+</p>
+
 ### Modules Library
 
 At the bottom of the menu, you will find your favorite modules. These modules can be pulled into the patch just like
