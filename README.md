@@ -105,6 +105,16 @@ By typing into the search box, you can filter the prefabs and modules.
 <img src="images/search.gif">
 </p>
 
+# Saving Prefabs
+
+To save a prefab, select some modules, right-click and pick `Save selection as...`
+
+This will open the save dialog. Save your prefab under a folder to give it a tag.
+
+<p align="center">
+<img src="images/creation.gif">
+</p>
+
 # Settings
 
 Right-clicking the Prefabs module will bring up a menu where you can change some settings.
