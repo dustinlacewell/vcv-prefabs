@@ -8,15 +8,31 @@ Quick patch prefabs and modules for <a href="https://vcvrack.com/">VCV Rack</a>.
 
 ## What are Prefabs?
 
-<img align="right" src="screenshot.png">
-
 Prefabs are reusable selections saved to disk. They usually contain multiple pre-wired modules.
 
+
+<p align="center">
 <img src="save.png">
+</p>
+
 
 The prefabs can then be pulled into a patch by right-clicking on the Prefabs widget:
 
-![](https://github.com/dustinlacewell/vcv-prefabs/blob/main/tangents.gif?raw=true)
 
+<p align="center">
+<img src="tangents.gif" width="600">
+</p>
 
+## The Prefabs Module
 
+<img align="right" src="screenshot.png">
+
+The Prefabs module is simple and shows you how many prefabs you have available at the top.
+
+### The Widget toggle
+
+Towards the buttom, a button will show/hide the Prefabs Widget
+
+<p align="center">
+<img src="toggle.gif" width="600">
+</p>
