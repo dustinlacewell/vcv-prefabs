@@ -34,5 +34,5 @@ The Prefabs module is simple and shows you how many prefabs you have available a
 Towards the buttom, a button will show/hide the Prefabs Widget
 
 <p align="center">
-<img src="toggle.gif" width="600">
+<img src="toggle.gif" width="590">
 </p>
