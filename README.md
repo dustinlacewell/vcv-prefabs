@@ -57,6 +57,12 @@ Right-clicking on the Prefabs widget will bring up a menu where you can access y
 
 Below the search box, you will all of your local prefabs, organized by tag.
 
+Just click or drag the prefab into the patch.
+
+<p align="center">
+<img src="prefab.gif">
+</p>
+
 Below the tag list, there is a sub-menu `by module:` where your prefabs are organized by the module they use.
 
 ### Plugin Prefabs
