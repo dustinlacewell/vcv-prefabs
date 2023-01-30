@@ -52,3 +52,25 @@ Right-clicking on the Prefabs widget will bring up a menu where you can access y
 <p align="center">
 <img src="context-menu.gif">
 </p>
+
+### Local Prefabs
+
+Below the search box, you will all of your local prefabs, organized by tag.
+
+Below the tag list, there is a sub-menu `by module:` where your prefabs are organized by the module they use.
+
+### Plugin Prefabs
+
+VCV Plugins can also provide prefabs. These are listed in the `Plugin Prefabs` menu.
+
+### Modules Library
+
+At the bottom of the menu, you will find your favorite modules. These modules can be pulled into the patch just like
+prefabs.
+
+Pressing `ctrl` will show all modules, not just the ones you have favorited.
+
+
+<p align="center">
+<img src="favorites.gif">
+</p>
