@@ -6,12 +6,14 @@
 
 #include "ModularMenuItem.hpp"
 #include "ModularMenuLabel.hpp"
-#include "ModuleResultsBuilder.hpp"
-#include "PluginItem.hpp"
-#include "PrefabItem.hpp"
-#include "TagItem.hpp"
-#include "menus/PluginSubMenuBuilder.hpp"
-#include "menus/TaggedModuleSubMenuBuilder.hpp"
+#include "menus/modules/LibraryPluginItem.hpp"
+#include "menus/modules/LibraryPluginMenu.hpp"
+#include "menus/modules/LibraryResultItem.hpp"
+#include "menus/modules/LibraryTagItem.hpp"
+#include "menus/modules/LibraryTagMenu.hpp"
+#include "menus/prefabs/PluginItem.hpp"
+#include "menus/prefabs/PrefabItem.hpp"
+#include "menus/prefabs/TagItem.hpp"
 #include "models/ModuleIndex.hpp"
 #include "ui/ModelBox.hpp"
 #include "ui/SearchBox.hpp"
@@ -27,7 +29,7 @@ struct IconMenuBuilder
     Menu* menu;
     SearchBox* searchBox;
 
-    IconMenuBuilder(Prefabs* module) : module(module) {}
+    IconMenuBuilder(Prefabs* module) : module(module) { modules = ModuleIndex(module); }
 
     void createSeparator() const { menu->addChild(new MenuSeparator()); }
 
@@ -50,8 +52,9 @@ struct IconMenuBuilder
         makeDefault(title);
     }
 
-    void createLocalPrefabTags(PrefabSource& localSource) const
+    void createLocalPrefabTags() const
     {
+        auto& localSource = module->prefabs.getLocalSource();
         for (auto& [tagName, tagPrefabs] : localSource.tags) {
             if (tagName == "untagged")
                 continue;
@@ -65,8 +68,16 @@ struct IconMenuBuilder
         }
     }
 
-    void createPrefabResults(PrefabSource& localSource) const
+    void createPrefabResults() const
     {
+        auto label = new ModularMenuLabel();
+        label->text = "Prefabs:";
+        label->visibleCallback = [this]() {
+            return searchBox->text != "";
+        };
+        menu->addChild(label);
+
+        auto& localSource = module->prefabs.getLocalSource();
         for (const auto& prefab : localSource.prefabs) {
             auto item = new PrefabItem(module, prefab);
             item->text = prefab.getName();
@@ -79,8 +90,9 @@ struct IconMenuBuilder
         }
     }
 
-    void createLocalPrefabTagsByModule(const PrefabSource& localSource) const
+    void createLocalPrefabTagsByModule() const
     {
+        auto& localSource = module->prefabs.getLocalSource();
         auto pluginsItem = makeDefault(new ModularMenuItem());
         pluginsItem->text = "by module:";
         pluginsItem->childMenuCallback = [this, plugins = localSource.plugins](ModularMenuItem* item, Menu* menu) {
@@ -156,7 +168,7 @@ struct IconMenuBuilder
     void createModuleSearchResults()
     {
         for (int i = 0; i < 128; i++) {
-            auto item = buildModuleSearchResult(module, &modules, i);
+            auto item = new LibraryResultItem(module, &modules, i);
             menu->addChild(item);
         }
     }
@@ -175,61 +187,26 @@ struct IconMenuBuilder
         menu->addChild(moreItem);
     }
 
-    void createModuleIndexMenu(std::string label, bool favoritesOnly)
+    void createModuleIndexMenu()
     {
-        auto all = new ModularMenuItem();
-        all->text = label;
-        all->visibleCallback = [this]() {
+        bool favoritesOnly = !modPressed(RACK_MOD_CTRL);
+        auto label = favoritesOnly ? "Favorites:" : "Modules:";
+        auto pluginMenu = new LibraryPluginMenu(module, label, favoritesOnly);
+        pluginMenu->visibleCallback = [this]() {
             return searchBox->text == "";
         };
-        all->childMenuCallback = [favoritesOnly](ModularMenuItem* item, Menu* indexSubMenu) {
-            for (auto plugin : rack::plugin::plugins) {
-                PluginSubMenuData data;
-                data.plugin = plugin;
-                data.modules = std::vector<Model*>();
-
-                for (auto pluginModule : plugin->models) {
-                    if (favoritesOnly && !pluginModule->isFavorite()) {
-                        continue;
-                    }
-                    data.modules.push_back(pluginModule);
-                }
-
-                if (data.modules.size() == 0) {
-                    continue;
-                }
-
-                auto pluginItem = buildPluginSubMenu(data);
-                indexSubMenu->addChild(pluginItem);
-            }
-        };
-        menu->addChild(all);
+        menu->addChild(pluginMenu);
     }
 
-    void createModuleTagIndexMenu(std::string label, bool favoritesOnly)
+    void createModuleTagIndexMenu()
     {
-        auto tagsItem = new ModularMenuItem();
-        tagsItem->text = label;
-        tagsItem->visibleCallback = [this]() {
+        bool favoritesOnly = !modPressed(RACK_MOD_CTRL);
+        auto label = favoritesOnly ? "Favorites by tag:" : "Modules by tag:";
+        auto tagIndexMenu = new LibraryTagMenu(module, label, favoritesOnly);
+        tagIndexMenu->visibleCallback = [this]() {
             return searchBox->text == "";
         };
-        tagsItem->childMenuCallback = [favoritesOnly](ModularMenuItem* item, Menu* indexSubMenu) {
-            auto label = new MenuLabel();
-            label->text = "Tags";
-            indexSubMenu->addChild(label);
-
-            for (int tagId = 0; tagId < (int)tag::tagAliases.size(); tagId++) {
-                auto tagItem = buildTaggedModuleSubMenu(tagId, favoritesOnly);
-
-                if (tagItem == nullptr) {
-                    continue;
-                }
-
-                indexSubMenu->addChild(tagItem);
-            }
-        };
-
-        menu->addChild(tagsItem);
+        menu->addChild(tagIndexMenu);
     }
 
     void createSearchBox()
@@ -247,11 +224,11 @@ struct IconMenuBuilder
         menu->addChild(searchBox);
     }
 
-    void createLocalPrefabs(PrefabSource& localSource) const
+    void createLocalPrefabs() const
     {
         createLocalPrefabsLabel();
-        createLocalPrefabTags(localSource);
-        createLocalPrefabTagsByModule(localSource);
+        createLocalPrefabTags();
+        createLocalPrefabTagsByModule();
     }
     void createPluginPrefabs()
     {
@@ -260,28 +237,23 @@ struct IconMenuBuilder
     }
     void createModuleResults()
     {
+        auto label = new ModularMenuLabel();
+        label->text = "Modules:";
+        label->visibleCallback = [this]() {
+            return searchBox->text != "";
+        };
+        menu->addChild(label);
+
         createModuleSearchResults();
         createModuleSearchMessage();
     }
-    void build()
+
+    void createLibrary()
     {
-        menu = createMenu();
-        modules.results.clear();
+        createModuleIndexMenu();
+        createModuleTagIndexMenu();
 
-        auto& localSource = module->prefabs.getLocalSource();
-
-        createSearchBox();
-        createPrefabResults(localSource);
-        createLocalPrefabs(localSource);
-        createPluginPrefabs();
-        createModuleResults();
-        createSeparator();
-
-        bool favoritesOnly = !modPressed(RACK_MOD_CTRL);
-        createModuleIndexMenu(favoritesOnly ? "Favorites:" : "Modules:", favoritesOnly);
-        createModuleTagIndexMenu(favoritesOnly ? "Favorites by tag:" : "Modules by tag:", favoritesOnly);
-
-        if (favoritesOnly) {
+        if (!modPressed(RACK_MOD_CTRL)) {
             auto tip = new ModularMenuLabel();
             tip->text = "Reopen with Ctrl to show all modules";
             tip->visibleCallback = [this]() {
@@ -289,5 +261,19 @@ struct IconMenuBuilder
             };
             menu->addChild(tip);
         }
+    }
+
+    void build()
+    {
+        menu = createMenu();
+        modules.results.clear();
+
+        createSearchBox();
+        createPrefabResults();
+        createLocalPrefabs();
+        createPluginPrefabs();
+        createSeparator();
+        createModuleResults();
+        createLibrary();
     }
 };

@@ -2,7 +2,7 @@
 #include <tag.hpp>
 #include "menus/IconMenuBuilder.hpp"
 #include "menus/ModularMenuItem.hpp"
-#include "menus/PluginItem.hpp"
+#include "menus/prefabs/PluginItem.hpp"
 #include "plugin.h"
 #include "utils/colors.hpp"
 #include "utils/mouse.hpp"

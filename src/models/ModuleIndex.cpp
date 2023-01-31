@@ -2,11 +2,6 @@
 #include <plugin.hpp>
 #include <tag.hpp>
 
-ModuleIndex::ModuleIndex()
-{
-    results = {};
-}
-
 struct TokenMatch
 {
     int length;
@@ -131,13 +126,22 @@ void ModuleIndex::search(std::string searchString)
         }
     }
 
-    // sort the results, by getScore
     std::vector<Result> _preResults;
     for (auto& pair : matches) {
         _preResults.push_back(pair.second);
     }
 
-    std::sort(_preResults.begin(), _preResults.end(), [](Result a, Result b) { return a.getScore() > b.getScore(); });
+    std::sort(_preResults.begin(), _preResults.end(), [this](Result a, Result b) {
+        if (module->moduleSorter.sortType > SortType::USAGE) {
+            if (a.model->isFavorite() && !b.model->isFavorite()) {
+                return true;
+            }
+            if (!a.model->isFavorite() && b.model->isFavorite()) {
+                return false;
+            }
+        }
+        return a.getScore() > b.getScore();
+    });
 
     for (auto& result : _preResults) {
         results.push_back(result.model);

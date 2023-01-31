@@ -38,6 +38,8 @@ Prefabs::Prefabs()
 
     prefabs = PrefabStore();
     prefabs.refresh();
+
+    tagManager = ModuleTagManager();
 }
 
 void Prefabs::show()
@@ -84,6 +86,7 @@ json_t* Prefabs::dataToJson()
     json_object_set_new(rootJ, "searchResultsQuantity", searchResultsQuantity.toJson());
     json_object_set_new(rootJ, "colorQuantity", colorQuantity.toJson());
     json_object_set_new(rootJ, "discoSpeedQuantity", discoSpeedQuantity.toJson());
+    json_object_set_new(rootJ, "tagManager", tagManager.toJson());
     return rootJ;
 }
 
@@ -115,6 +118,10 @@ void Prefabs::dataFromJson(json_t* rootJ)
     json_t* discoSpeedQuantityJ = json_object_get(rootJ, "discoSpeedQuantity");
     if (discoSpeedQuantityJ)
         discoSpeedQuantity.fromJson(discoSpeedQuantityJ);
+
+    json_t* tagManagerJ = json_object_get(rootJ, "tagManager");
+    if (tagManagerJ)
+        tagManager.fromJson(tagManagerJ);
 }
 
 Model* modelPrefabs = createModel<Prefabs, PrefabsWidget>("Prefabs");

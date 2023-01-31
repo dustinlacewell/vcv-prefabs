@@ -4,8 +4,8 @@
 
 using namespace rack;
 
-#include <Prefabs.hpp>
-#include "ModularMenuItem.hpp"
+#include "Prefabs.hpp"
+#include "menus/ModularMenuItem.hpp"
 
 struct PrefabItem : ModularMenuItem
 {

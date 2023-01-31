@@ -1,11 +1,15 @@
-#include "PluginSubMenuBuilder.hpp"
+#include <tag.hpp>
 
-MenuItem* buildModuleSubItem(Model* model)
+#include "LibraryModuleItem.hpp"
+#include "ui/ModelBox.hpp"
+#include "ui/VerticalGroup.hpp"
+
+LibraryModuleItem::LibraryModuleItem(Model* model)
 {
-    auto moduleItem = new ModularMenuItem();
-    moduleItem->text = model->name;
+    this->model = model;
+    this->text = model->name;
 
-    moduleItem->buttonCallback = [model](const event::Button& e) {
+    this->buttonCallback = [model](const event::Button& e) {
         settings::ModuleInfo& mi = settings::moduleInfos[model->plugin->slug][model->slug];
         mi.added++;
         mi.lastAdded = system::getUnixTime();
@@ -31,16 +35,16 @@ MenuItem* buildModuleSubItem(Model* model)
         e.consume(widget);
         return true;
     };
-    moduleItem->rightClickCallback = [model, moduleItem](const event::Button& e) {
+    this->rightClickCallback = [model, this](const event::Button& e) {
         model->setFavorite(!model->isFavorite());
-        e.consume(moduleItem);
+        e.consume(this);
         return true;
     };
-    moduleItem->visibleCallback = [model, moduleItem]() {
-        moduleItem->rightText = CHECKMARK(model->isFavorite());
+    this->visibleCallback = [model, this]() {
+        this->rightText = CHECKMARK(model->isFavorite());
         return true;
     };
-    moduleItem->tooltipCallback = [model]() {
+    this->tooltipCallback = [model]() {
         auto modelbox = new ModelBox();
         modelbox->setModel(model);
         modelbox->createPreview();
@@ -70,27 +74,4 @@ MenuItem* buildModuleSubItem(Model* model)
 
         return group;
     };
-
-    return moduleItem;
-}
-
-std::vector<MenuItem*> createModuleIndexModuleSubMenu(PluginSubMenuData data)
-{
-    std::vector<MenuItem*> items;
-    std::transform(data.modules.begin(), data.modules.end(), std::back_inserter(items), [](Model* model) {
-        return buildModuleSubItem(model);
-    });
-    return items;
-};
-
-MenuItem* buildPluginSubMenu(PluginSubMenuData data)
-{
-    auto item = new ModularMenuItem();
-    item->text = data.plugin->slug;
-    item->childMenuCallback = [data](ModularMenuItem* item, Menu* pluginSubMenu) {
-        for (auto moduleItem : createModuleIndexModuleSubMenu(data)) {
-            pluginSubMenu->addChild(moduleItem);
-        }
-    };
-    return item;
 }

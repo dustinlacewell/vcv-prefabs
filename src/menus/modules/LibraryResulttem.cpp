@@ -1,18 +1,29 @@
-#include "ModuleResultsBuilder.hpp"
+#include <tag.hpp>
 
-MenuItem* buildModuleSearchResult(Prefabs* module, ModuleIndex* modules, int index)
+#include "LibraryResultItem.hpp"
+#include "ui/ModelBox.hpp"
+#include "ui/VerticalGroup.hpp"
+
+LibraryResultItem::LibraryResultItem(Prefabs* module, ModuleIndex* modules, int index)
 {
-    auto item = new ModularMenuItem();
-    item->visibleCallback = [module, modules, item, index]() {
-        auto size = modules->results.size();
-        auto maxSize = module->searchResultsQuantity.getValue();
+    this->module = module;
+    this->modules = modules;
+    this->index = index;
+
+    this->visibleCallback = [this]() {
+        auto size = this->modules->results.size();
+        auto maxSize = this->module->searchResultsQuantity.getValue();
         auto limit = fmin(size, maxSize);
 
-        if (index < limit) {
-            auto model = modules->results[index];
-            if (item->text != model->name) {
-                item->text = model->name;
-                item->rightText = model->plugin->name;
+        if (this->index < limit) {
+            auto model = this->modules->results[this->index];
+            if (this->text != model->name) {
+                this->text = model->name;
+                this->rightText = model->plugin->name;
+
+                if (model->isFavorite()) {
+                    this->rightText += CHECKMARK(true);
+                }
 
                 auto modelbox = new ModelBox();
                 modelbox->setModel(model);
@@ -23,13 +34,13 @@ MenuItem* buildModuleSearchResult(Prefabs* module, ModuleIndex* modules, int ind
                 tooltip->addChild(modelbox);
                 tooltip->box.size = modelbox->box.size;
 
-                item->setTooltip(tooltip);
+                this->setTooltip(tooltip);
             }
             return true;
         }
         return false;
     };
-    item->buttonCallback = [module, modules, index](const event::Button& e) {
+    this->buttonCallback = [module, modules, index](const event::Button& e) {
         auto size = modules->results.size();
         auto maxSize = module->searchResultsQuantity.getValue();
         auto limit = fmin(size, maxSize);
@@ -66,6 +77,4 @@ MenuItem* buildModuleSearchResult(Prefabs* module, ModuleIndex* modules, int ind
         e.consume(widget);
         return true;
     };
-
-    return item;
 }

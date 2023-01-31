@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rack.hpp>
+#include "Prefabs.hpp"
 
 using namespace rack;
 
@@ -11,8 +12,10 @@ using namespace rack;
 
 struct ModuleIndex
 {
+    Prefabs* module;
     std::vector<Model*> results;
 
-    ModuleIndex();
+    ModuleIndex() : module(NULL){};
+    ModuleIndex(Prefabs* module) : module(module){};
     void search(std::string searchString);
 };

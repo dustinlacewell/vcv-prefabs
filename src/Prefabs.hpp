@@ -1,6 +1,8 @@
 #pragma once
 
 #include <rack.hpp>
+#include "models/ModuleSorter.hpp"
+#include "models/ModuleTagManager.hpp"
 #include "models/Prefab.hpp"
 #include "models/PrefabStore.hpp"
 #include "models/SimpleQuantity.hpp"
@@ -30,6 +32,9 @@ struct Prefabs : rack::Module
 
     bool showing = true;
     Vec pos = Vec(30, 30);
+
+    ModuleTagManager tagManager;
+    ModuleSorter moduleSorter;
 
     PrefabStore prefabs;
 

@@ -97,4 +97,10 @@ void PrefabsWidget::appendContextMenu(Menu* menu)
     discoSpeed->box.size.x = 220.0f;
     discoSpeed->quantity = &prefabsModule->discoSpeedQuantity;
     menu->addChild(discoSpeed);
+
+    auto sortMenu = prefabsModule->moduleSorter.createSortTypeMenu();
+    menu->addChild(sortMenu);
+
+    auto tagMenu = prefabsModule->tagManager.createToggleMenu();
+    menu->addChild(tagMenu);
 }
