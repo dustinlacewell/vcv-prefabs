@@ -125,7 +125,7 @@ void PrefabSource::refresh()
     plugins.clear();
     prefabs.clear();
 
-    this->crawlTag("");  // untagged prefabs
+    nPrefabs += this->crawlTag("");  // untagged prefabs
 
     eachDir(rootPath(), [&nPrefabs, this](auto ent) {
         // check if ent is a directory
