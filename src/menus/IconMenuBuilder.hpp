@@ -6,9 +6,12 @@
 
 #include "ModularMenuItem.hpp"
 #include "ModularMenuLabel.hpp"
+#include "ModuleResultsBuilder.hpp"
 #include "PluginItem.hpp"
 #include "PrefabItem.hpp"
 #include "TagItem.hpp"
+#include "menus/PluginSubMenuBuilder.hpp"
+#include "menus/TaggedModuleSubMenuBuilder.hpp"
 #include "models/ModuleIndex.hpp"
 #include "ui/ModelBox.hpp"
 #include "ui/SearchBox.hpp"
@@ -150,79 +153,11 @@ struct IconMenuBuilder
         }
     }
 
-    void createModuleSearchResult(int index)
-    {
-        auto item = new ModularMenuItem();
-        item->visibleCallback = [this, item, index]() {
-            auto size = modules.results.size();
-            auto maxSize = module->searchResultsQuantity.getValue();
-            auto limit = fmin(size, maxSize);
-
-            if (index < limit) {
-                auto model = modules.results[index];
-                if (item->text != model->name) {
-                    item->text = model->name;
-                    item->rightText = model->plugin->name;
-
-                    auto modelbox = new ModelBox();
-                    modelbox->setModel(model);
-                    modelbox->zoom = 0.8f;
-                    modelbox->updateZoom();
-
-                    auto tooltip = new Tooltip();
-                    tooltip->addChild(modelbox);
-                    tooltip->box.size = modelbox->box.size;
-
-                    item->setTooltip(tooltip);
-                }
-                return true;
-            }
-            return false;
-        };
-        item->buttonCallback = [this, index](const event::Button& e) {
-            auto size = modules.results.size();
-            auto maxSize = module->searchResultsQuantity.getValue();
-            auto limit = fmin(size, maxSize);
-
-            if (index >= limit) {
-                return false;
-            }
-
-            auto model = modules.results[index];
-
-            // Record usage
-            settings::ModuleInfo& mi = settings::moduleInfos[model->plugin->slug][model->slug];
-            mi.added++;
-            mi.lastAdded = system::getUnixTime();
-
-            // Record history
-            history::ComplexAction* h = new history::ComplexAction;
-            h->name = "add module";
-
-            auto newModule = model->createModule();
-            APP->engine->addModule(newModule);
-            auto widget = model->createModuleWidget(newModule);
-            APP->scene->rack->updateModuleOldPositions();
-            APP->scene->rack->addModuleAtMouse(widget);
-            h->push(APP->scene->rack->getModuleDragAction());
-            widget->loadTemplate();
-
-            // Record history
-            history::ModuleAdd* ha = new history::ModuleAdd;
-            ha->setModule(widget);
-            h->push(ha);
-            APP->history->push(h);
-
-            e.consume(widget);
-            return true;
-        };
-        menu->addChild(item);
-    }
-
     void createModuleSearchResults()
     {
         for (int i = 0; i < 128; i++) {
-            createModuleSearchResult(i);
+            auto item = buildModuleSearchResult(module, &modules, i);
+            menu->addChild(item);
         }
     }
 
@@ -240,344 +175,56 @@ struct IconMenuBuilder
         menu->addChild(moreItem);
     }
 
-    void createModuleIndexFavoriteSubMenuItem(Model* pluginModule, Menu* pluginSubMenu) const
-    {
-        auto moduleItem = new ModularMenuItem();
-        moduleItem->text = pluginModule->name;
-
-        moduleItem->buttonCallback = [pluginModule](const event::Button& e) {
-            // Record usage
-            settings::ModuleInfo& mi = settings::moduleInfos[pluginModule->plugin->slug][pluginModule->slug];
-            mi.added++;
-            mi.lastAdded = system::getUnixTime();
-
-            // Record history
-            history::ComplexAction* h = new history::ComplexAction;
-            h->name = "add module";
-
-            auto newModule = pluginModule->createModule();
-            APP->engine->addModule(newModule);
-            auto widget = pluginModule->createModuleWidget(newModule);
-            APP->scene->rack->updateModuleOldPositions();
-            APP->scene->rack->addModuleAtMouse(widget);
-            h->push(APP->scene->rack->getModuleDragAction());
-            widget->loadTemplate();
-
-            // Record history
-            history::ModuleAdd* ha = new history::ModuleAdd;
-            ha->setModule(widget);
-            h->push(ha);
-            APP->history->push(h);
-
-            e.consume(widget);
-            return true;
-        };
-        // right click to show context menu
-        moduleItem->rightClickCallback = [pluginModule](const event::Button& e) {
-            auto overlay = new MenuOverlay();
-            auto contextMenu = new Menu();
-            overlay->addChild(contextMenu);
-
-            // add item to toggle favorite
-            auto favoriteItem = new ModularMenuItem();
-            favoriteItem->text = "Favorite";
-            favoriteItem->rightText = CHECKMARK(pluginModule->isFavorite());
-            favoriteItem->buttonCallback = [pluginModule](const event::Button& e) {
-                pluginModule->setFavorite(!pluginModule->isFavorite());
-                e.consume(NULL);
-                return true;
-            };
-            contextMenu->addChild(favoriteItem);
-
-            contextMenu->box.pos = APP->scene->mousePos;
-            APP->scene->addChild(overlay);
-            e.consume(contextMenu);
-            return true;
-        };
-        moduleItem->visibleCallback = [pluginModule, moduleItem]() {
-            moduleItem->rightText = modPressed(RACK_MOD_CTRL) ? CHECKMARK(pluginModule->isFavorite()) : "";
-            return modPressed(RACK_MOD_CTRL) || pluginModule->isFavorite();
-        };
-        moduleItem->tooltipCallback = [pluginModule]() {
-            auto modelbox = new ModelBox();
-            modelbox->setModel(pluginModule);
-            modelbox->createPreview();
-            modelbox->zoom = 0.8f;
-            modelbox->updateZoom();
-
-            std::vector<std::string> tagAliases;
-
-            for (auto& tagId : pluginModule->tagIds) {
-                for (const std::string& tagAlias : tag::tagAliases[tagId]) {
-                    tagAliases.push_back(tagAlias);
-                }
-            }
-            std::string tagStr = rack::string::join(tagAliases, ", ");
-            std::transform(tagStr.begin(), tagStr.end(), tagStr.begin(), ::tolower);
-
-            auto group = new VerticalGroup();
-
-            group->addChild(modelbox);
-
-            auto tagLabel = new Label();
-            group->addChild(tagLabel);
-            tagLabel->text = tagStr;
-            Rect r;
-            modelbox->zoomWidget->getViewport(r);
-            tagLabel->box.size.x = fmax(300, r.getWidth());
-
-            return group;
-        };
-
-        pluginSubMenu->addChild(moduleItem);
-    }
-
-    void createModuleIndexModuleSubMenuItem(Model* pluginModule, Menu* pluginSubMenu) const
-    {
-        auto moduleItem = new ModularMenuItem();
-        moduleItem->text = pluginModule->name;
-
-        moduleItem->buttonCallback = [pluginModule](const event::Button& e) {
-            settings::ModuleInfo& mi = settings::moduleInfos[pluginModule->plugin->slug][pluginModule->slug];
-            mi.added++;
-            mi.lastAdded = system::getUnixTime();
-
-            // Record history
-            history::ComplexAction* h = new history::ComplexAction;
-            h->name = "add module";
-
-            auto newModule = pluginModule->createModule();
-            APP->engine->addModule(newModule);
-            auto widget = pluginModule->createModuleWidget(newModule);
-            APP->scene->rack->updateModuleOldPositions();
-            APP->scene->rack->addModuleAtMouse(widget);
-
-            widget->loadTemplate();
-
-            // Record history
-            history::ModuleAdd* ha = new history::ModuleAdd;
-            ha->setModule(widget);
-            h->push(ha);
-            APP->history->push(h);
-
-            e.consume(widget);
-            return true;
-        };
-        moduleItem->rightClickCallback = [pluginModule, moduleItem](const event::Button& e) {
-            pluginModule->setFavorite(!pluginModule->isFavorite());
-            e.consume(moduleItem);
-            return true;
-        };
-        moduleItem->visibleCallback = [pluginModule, moduleItem]() {
-            moduleItem->rightText = CHECKMARK(pluginModule->isFavorite());
-            return true;
-        };
-        moduleItem->tooltipCallback = [pluginModule]() {
-            auto modelbox = new ModelBox();
-            modelbox->setModel(pluginModule);
-            modelbox->createPreview();
-            modelbox->zoom = 0.8f;
-            modelbox->updateZoom();
-
-            std::vector<std::string> tagAliases;
-
-            for (auto& tagId : pluginModule->tagIds) {
-                for (const std::string& tagAlias : tag::tagAliases[tagId]) {
-                    tagAliases.push_back(tagAlias);
-                }
-            }
-            std::string tagStr = rack::string::join(tagAliases, ", ");
-            std::transform(tagStr.begin(), tagStr.end(), tagStr.begin(), ::tolower);
-
-            auto group = new VerticalGroup();
-
-            group->addChild(modelbox);
-
-            auto tagLabel = new Label();
-            group->addChild(tagLabel);
-            tagLabel->text = tagStr;
-            Rect r;
-            modelbox->zoomWidget->getViewport(r);
-            tagLabel->box.size.x = fmax(300, r.getWidth());
-
-            return group;
-        };
-
-        pluginSubMenu->addChild(moduleItem);
-    }
-
-    void createModuleIndexModuleSubMenu(Plugin* plugin, Menu* pluginSubMenu) const
-    {
-        for (auto pluginModule : plugin->models) {
-            createModuleIndexFavoriteSubMenuItem(pluginModule, pluginSubMenu);
-        }
-    };
-
-    void createModuleIndexSubMenuItem(Plugin*& plugin, Menu* indexSubMenu) const
-    {
-        auto pluginItem = new ModularMenuItem();
-        pluginItem->text = plugin->slug;
-        bool hasFavorite = false;
-        for (auto pluginModule : plugin->models) {
-            if (pluginModule->isFavorite()) {
-                hasFavorite = true;
-                break;
-            }
-        }
-        pluginItem->visibleCallback = [hasFavorite]() {
-            return (modPressed(RACK_MOD_CTRL) || hasFavorite);
-        };
-        pluginItem->childMenuCallback = [this, plugin](ModularMenuItem* item, Menu* pluginSubMenu) {
-            createModuleIndexModuleSubMenu(plugin, pluginSubMenu);
-        };
-        indexSubMenu->addChild(pluginItem);
-    }
-
-    void createModuleIndexSubMenu(Menu* indexSubMenu)
-    {
-        for (auto& plugin : rack::plugin::plugins) {
-            createModuleIndexSubMenuItem(plugin, indexSubMenu);
-        }
-    }
-
-    void createModuleIndexMenu()
+    void createModuleIndexMenu(std::string label, bool favoritesOnly)
     {
         auto all = new ModularMenuItem();
-        all->text = "Favorites:";
-        all->visibleCallback = [this, all]() {
-            auto ctrl = modPressed(RACK_MOD_CTRL);
-            all->text = ctrl ? "Modules:" : "Favorites:";
+        all->text = label;
+        all->visibleCallback = [this]() {
             return searchBox->text == "";
         };
-        all->childMenuCallback = [this](ModularMenuItem* item, Menu* indexSubMenu) {
-            createModuleIndexSubMenu(indexSubMenu);
+        all->childMenuCallback = [favoritesOnly](ModularMenuItem* item, Menu* indexSubMenu) {
+            for (auto plugin : rack::plugin::plugins) {
+                PluginSubMenuData data;
+                data.plugin = plugin;
+                data.modules = std::vector<Model*>();
+
+                for (auto pluginModule : plugin->models) {
+                    if (favoritesOnly && !pluginModule->isFavorite()) {
+                        continue;
+                    }
+                    data.modules.push_back(pluginModule);
+                }
+
+                if (data.modules.size() == 0) {
+                    continue;
+                }
+
+                auto pluginItem = buildPluginSubMenu(data);
+                indexSubMenu->addChild(pluginItem);
+            }
         };
         menu->addChild(all);
     }
 
-    void createModuleTagIndexMenu()
+    void createModuleTagIndexMenu(std::string label, bool favoritesOnly)
     {
         auto tagsItem = new ModularMenuItem();
-        tagsItem->text = "Modules by tag:";
+        tagsItem->text = label;
         tagsItem->visibleCallback = [this]() {
-            auto ctrl = modPressed(RACK_MOD_CTRL);
-            return ctrl && searchBox->text == "";
+            return searchBox->text == "";
         };
-        tagsItem->childMenuCallback = [this](ModularMenuItem* item, Menu* indexSubMenu) {
+        tagsItem->childMenuCallback = [favoritesOnly](ModularMenuItem* item, Menu* indexSubMenu) {
+            auto label = new MenuLabel();
+            label->text = "Tags";
+            indexSubMenu->addChild(label);
+
             for (int tagId = 0; tagId < (int)tag::tagAliases.size(); tagId++) {
-                auto tag = tag::getTag(tagId);
-                auto pluginsWithTag = std::map<Plugin*, std::vector<Model*>>();
+                auto tagItem = buildTaggedModuleSubMenu(tagId, favoritesOnly);
 
-                // Check if there are any plugins with this tag
-                bool hasTag = false;
-                for (auto& plugin : rack::plugin::plugins) {
-                    for (auto pluginModule : plugin->models) {
-                        if (std::find(pluginModule->tagIds.begin(), pluginModule->tagIds.end(), tagId) !=
-                            pluginModule->tagIds.end()) {
-                            hasTag = true;
-                            if (pluginsWithTag.find(plugin) == pluginsWithTag.end()) {
-                                pluginsWithTag[plugin] = std::vector<Model*>();
-                            }
-                            pluginsWithTag[plugin].push_back(pluginModule);
-
-                            break;
-                        }
-                    }
-                }
-
-                if (!hasTag) {
+                if (tagItem == nullptr) {
                     continue;
                 }
 
-                auto tagItem = new ModularMenuItem();
-                tagItem->text = tag;
-                tagItem->visibleCallback = [this]() {
-                    return modPressed(RACK_MOD_CTRL) && searchBox->text == "";
-                };
-                tagItem->childMenuCallback = [this, pluginsWithTag](ModularMenuItem* item, Menu* tagSubMenu) {
-                    for (auto pluginPair : pluginsWithTag) {
-                        auto plugin = pluginPair.first;
-                        auto pluginModels = pluginPair.second;
-
-                        auto pluginItem = new ModularMenuItem();
-                        pluginItem->text = plugin->slug;
-                        pluginItem->childMenuCallback = [this, pluginModels](
-                                                            ModularMenuItem* item, Menu* pluginSubMenu) {
-                            for (auto pluginModule : pluginModels) {
-                                createModuleIndexModuleSubMenuItem(pluginModule, pluginSubMenu);
-                            }
-                        };
-
-                        tagSubMenu->addChild(pluginItem);
-                    }
-                };
-                indexSubMenu->addChild(tagItem);
-            }
-        };
-
-        menu->addChild(tagsItem);
-    }
-
-    void createFavoritesTagIndexMenu()
-    {
-        auto tagsItem = new ModularMenuItem();
-        tagsItem->text = "Favorites by tag:";
-        tagsItem->visibleCallback = [this]() {
-            auto ctrl = modPressed(RACK_MOD_CTRL);
-            return !ctrl && searchBox->text == "";
-        };
-        tagsItem->childMenuCallback = [this](ModularMenuItem* item, Menu* indexSubMenu) {
-            for (int tagId = 0; tagId < (int)tag::tagAliases.size(); tagId++) {
-                auto tag = tag::getTag(tagId);
-                auto pluginsWithTagAndFavorite = std::map<Plugin*, std::vector<Model*>>();
-
-                // Check if there are any favorites in this tag
-                bool hasFavorite = false;
-                for (auto& plugin : rack::plugin::plugins) {
-                    for (auto pluginModule : plugin->models) {
-                        if (std::find(pluginModule->tagIds.begin(), pluginModule->tagIds.end(), tagId) !=
-                            pluginModule->tagIds.end()) {
-                            if (pluginModule->isFavorite()) {
-                                hasFavorite = true;
-                                // update pluginsWithTagAndFavorite
-                                if (pluginsWithTagAndFavorite.find(plugin) == pluginsWithTagAndFavorite.end()) {
-                                    pluginsWithTagAndFavorite[plugin] = std::vector<Model*>();
-                                }
-                                pluginsWithTagAndFavorite[plugin].push_back(pluginModule);
-
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (!hasFavorite) {
-                    continue;
-                }
-
-                auto tagItem = new ModularMenuItem();
-                tagItem->text = tag;
-                tagItem->visibleCallback = [this]() {
-                    return !modPressed(RACK_MOD_CTRL) && searchBox->text == "";
-                };
-                tagItem->childMenuCallback = [this, pluginsWithTagAndFavorite](
-                                                 ModularMenuItem* item, Menu* tagSubMenu) {
-                    for (auto pluginPair : pluginsWithTagAndFavorite) {
-                        auto plugin = pluginPair.first;
-                        auto pluginModels = pluginPair.second;
-
-                        auto pluginItem = new ModularMenuItem();
-                        pluginItem->text = plugin->slug;
-                        pluginItem->childMenuCallback = [this, pluginModels](
-                                                            ModularMenuItem* item, Menu* pluginSubMenu) {
-                            for (auto pluginModule : pluginModels) {
-                                createModuleIndexModuleSubMenuItem(pluginModule, pluginSubMenu);
-                            }
-                        };
-
-                        tagSubMenu->addChild(pluginItem);
-                    }
-                };
                 indexSubMenu->addChild(tagItem);
             }
         };
@@ -627,10 +274,20 @@ struct IconMenuBuilder
         createPrefabResults(localSource);
         createLocalPrefabs(localSource);
         createPluginPrefabs();
-        createSeparator();
         createModuleResults();
-        createModuleIndexMenu();
-        createFavoritesTagIndexMenu();
-        createModuleTagIndexMenu();
+        createSeparator();
+
+        bool favoritesOnly = !modPressed(RACK_MOD_CTRL);
+        createModuleIndexMenu(favoritesOnly ? "Favorites:" : "Modules:", favoritesOnly);
+        createModuleTagIndexMenu(favoritesOnly ? "Favorites by tag:" : "Modules by tag:", favoritesOnly);
+
+        if (favoritesOnly) {
+            auto tip = new ModularMenuLabel();
+            tip->text = "Reopen with Ctrl to show all modules";
+            tip->visibleCallback = [this]() {
+                return searchBox->text == "";
+            };
+            menu->addChild(tip);
+        }
     }
 };
