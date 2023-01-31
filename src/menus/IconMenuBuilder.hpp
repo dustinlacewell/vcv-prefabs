@@ -189,11 +189,30 @@ struct IconMenuBuilder
             }
 
             auto model = modules.results[index];
+
+            // Record usage
+            settings::ModuleInfo& mi = settings::moduleInfos[model->plugin->slug][model->slug];
+            mi.added++;
+            mi.lastAdded = system::getUnixTime();
+
+            // Record history
+            history::ComplexAction* h = new history::ComplexAction;
+            h->name = "add module";
+
             auto newModule = model->createModule();
             APP->engine->addModule(newModule);
             auto widget = model->createModuleWidget(newModule);
             APP->scene->rack->updateModuleOldPositions();
             APP->scene->rack->addModuleAtMouse(widget);
+            h->push(APP->scene->rack->getModuleDragAction());
+            widget->loadTemplate();
+
+            // Record history
+            history::ModuleAdd* ha = new history::ModuleAdd;
+            ha->setModule(widget);
+            h->push(ha);
+            APP->history->push(h);
+
             e.consume(widget);
             return true;
         };
@@ -227,11 +246,29 @@ struct IconMenuBuilder
         moduleItem->text = pluginModule->name;
 
         moduleItem->buttonCallback = [pluginModule](const event::Button& e) {
+            // Record usage
+            settings::ModuleInfo& mi = settings::moduleInfos[pluginModule->plugin->slug][pluginModule->slug];
+            mi.added++;
+            mi.lastAdded = system::getUnixTime();
+
+            // Record history
+            history::ComplexAction* h = new history::ComplexAction;
+            h->name = "add module";
+
             auto newModule = pluginModule->createModule();
             APP->engine->addModule(newModule);
             auto widget = pluginModule->createModuleWidget(newModule);
             APP->scene->rack->updateModuleOldPositions();
             APP->scene->rack->addModuleAtMouse(widget);
+            h->push(APP->scene->rack->getModuleDragAction());
+            widget->loadTemplate();
+
+            // Record history
+            history::ModuleAdd* ha = new history::ModuleAdd;
+            ha->setModule(widget);
+            h->push(ha);
+            APP->history->push(h);
+
             e.consume(widget);
             return true;
         };
@@ -301,11 +338,28 @@ struct IconMenuBuilder
         moduleItem->text = pluginModule->name;
 
         moduleItem->buttonCallback = [pluginModule](const event::Button& e) {
+            settings::ModuleInfo& mi = settings::moduleInfos[pluginModule->plugin->slug][pluginModule->slug];
+            mi.added++;
+            mi.lastAdded = system::getUnixTime();
+
+            // Record history
+            history::ComplexAction* h = new history::ComplexAction;
+            h->name = "add module";
+
             auto newModule = pluginModule->createModule();
             APP->engine->addModule(newModule);
             auto widget = pluginModule->createModuleWidget(newModule);
             APP->scene->rack->updateModuleOldPositions();
             APP->scene->rack->addModuleAtMouse(widget);
+
+            widget->loadTemplate();
+
+            // Record history
+            history::ModuleAdd* ha = new history::ModuleAdd;
+            ha->setModule(widget);
+            h->push(ha);
+            APP->history->push(h);
+
             e.consume(widget);
             return true;
         };
