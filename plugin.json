@@ -1,23 +1,25 @@
 {
   "slug": "Prefabs",
   "name": "Prefabs",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "license": "MIT",
   "brand": "ldlework",
   "author": "ldlework",
   "authorEmail": "dlacewell@gmail.com",
   "authorUrl": "https://github.com/dustinlacewell",
   "pluginUrl": "https://github.com/dustinlacewell/vcv-prefabs",
-  "manualUrl": "",
-  "sourceUrl": "",
-  "donateUrl": "",
+  "manualUrl": "https://github.com/dustinlacewell/vcv-prefabs",
+  "sourceUrl": "https://github.com/dustinlacewell/vcv-prefabs",
+  "donateUrl": "https://www.buymeacoffee.com/idle",
   "changelogUrl": "",
   "modules": [
     {
       "slug": "Prefabs",
       "name": "Prefabs",
-      "description": "A selection preset inserter for VCV Rack",
-      "tags": []
+      "description": "Quick prefabs and module library for VCV Rack.",
+      "tags": [
+        "utility"
+      ]
     }
   ]
 }
