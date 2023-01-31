@@ -33,7 +33,8 @@ std::string PrefabSource::rootPath()
 
 std::string PrefabSource::pathForTag(std::string tagName)
 {
-    return rootPath() + '/' + tagName;
+    return rootPath() + (tagName.empty() ? "" : ('/' + tagName));
+    //        return rootPath() + '/' + tagName;
 }
 
 std::string PrefabSource::pathForPrefab(std::string tagName, std::string prefabName)
@@ -83,7 +84,7 @@ bool PrefabSource::loadPrefab(std::string tagName, std::string prefabName)
 
     // load prefab from json
     Prefab prefab = Prefab(prefab_path);
-    prefab.addTag(tagName);
+    prefab.addTag(tagName == "" ? "untagged" : tagName);
     prefab.fromJson(rootJ);
 
     prefab.source = plugin ? plugin->slug : "local";
@@ -105,6 +106,9 @@ int PrefabSource::crawlTag(std::string tagName)
     }
 
     eachDir(tagPath, [&](auto ent) {
+        if (isDirectory(tagPath + '/' + ent->d_name)) {
+            return;
+        }
         if (loadPrefab(tagName, ent->d_name)) {
             nPrefabs++;
         }
@@ -121,7 +125,15 @@ void PrefabSource::refresh()
     plugins.clear();
     prefabs.clear();
 
-    eachDir(rootPath(), [&nPrefabs, this](auto ent) { nPrefabs += this->crawlTag(ent->d_name); });
+    this->crawlTag("");  // untagged prefabs
+
+    eachDir(rootPath(), [&nPrefabs, this](auto ent) {
+        // check if ent is a directory
+        if (!isDirectory(rootPath() + '/' + ent->d_name)) {
+            return;
+        }
+        nPrefabs += this->crawlTag(ent->d_name);
+    });
 
     total = nPrefabs;
 }

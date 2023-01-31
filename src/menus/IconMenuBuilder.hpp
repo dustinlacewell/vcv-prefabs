@@ -50,7 +50,15 @@ struct IconMenuBuilder
     void createLocalPrefabTags(PrefabSource& localSource) const
     {
         for (auto& [tagName, tagPrefabs] : localSource.tags) {
+            if (tagName == "untagged")
+                continue;
             makeDefault(new TagItem(module, tagName, tagPrefabs));
+        }
+
+        // add "untagged" tag
+        auto untagged = localSource.tags.find("untagged");
+        if (untagged != localSource.tags.end()) {
+            makeDefault(new TagItem(module, "untagged", untagged->second));
         }
     }
 
@@ -92,7 +100,16 @@ struct IconMenuBuilder
         std::vector<Widget*> widgets = {};
 
         for (auto& [tagName, tagPrefabs] : source.tags) {
+            if (tagName == "untagged")
+                continue;
             auto tag = new TagItem(module, tagName, tagPrefabs);
+            widgets.push_back(tag);
+        }
+
+        // get untagged
+        auto untagged = source.tags.find("untagged");
+        if (untagged != source.tags.end()) {
+            auto tag = new TagItem(module, "untagged", untagged->second);
             widgets.push_back(tag);
         }
 
