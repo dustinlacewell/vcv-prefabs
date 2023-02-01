@@ -1,4 +1,5 @@
 #include "PrefabItem.hpp"
+#include <patch.hpp>
 
 PrefabItem::PrefabItem(Prefabs* module, Prefab prefab)
 {
@@ -18,11 +19,12 @@ void PrefabItem::onButton(const event::Button& e)
     if (this->disabled) {
         return;
     }
+
+    // get prefab.filename's extension
+    std::string extension = prefab.filename.substr(prefab.filename.find_last_of(".") + 1);
+
     if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_LEFT) {
         auto rack = APP->scene->rack;
-
-        // get prefab.filename's extension
-        std::string extension = prefab.filename.substr(prefab.filename.find_last_of(".") + 1);
 
         // if it's a .vcv file, unarchive it first
         if (extension == "vcv") {
@@ -39,6 +41,26 @@ void PrefabItem::onButton(const event::Button& e)
         for (auto mw : rack->getSelected()) {
             e.consume(mw);
         }
+    }
+    else if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_RIGHT) {
+        // create a context menu with a single item to load the patch
+        if (extension != "vcv") {
+            return;
+        }
+
+        Menu* menu = createMenu();
+        auto item = new ModularMenuItem();
+        item->text = "Load patch";
+        item->buttonCallback = [this](const event::Button& e) {
+            MenuOverlay* overlay = getAncestorOfType<MenuOverlay>();
+            if (overlay) {
+                overlay->requestDelete();
+            }
+            APP->patch->load(prefab.filename);
+            return true;
+        };
+        menu->addChild(item);
+        return;
     }
 
     // Close menu
