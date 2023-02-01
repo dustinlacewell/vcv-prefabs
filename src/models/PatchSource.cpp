@@ -18,8 +18,16 @@ json_t* PatchSource::loadFile(std::string path)
         return nullptr;
     }
 
+    if (settings::devMode) {
+        INFO("[Prefabs] Loading patch from %s", path.c_str());
+    }
+
     auto patchRoot = asset::user("prefab-tmp");
     system::createDirectories(patchRoot);
+
+    if (settings::devMode) {
+        INFO("[Prefabs] Unpacking patch to %s", patchRoot.c_str());
+    }
     system::unarchiveToDirectory(path, patchRoot);
 
     auto patchPath = system::join(patchRoot, "patch.json");
