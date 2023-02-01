@@ -32,20 +32,24 @@ json_t* PatchSource::loadFile(std::string path)
 
     auto patchPath = system::join(patchRoot, "patch.json");
     FILE* file = std::fopen(patchPath.c_str(), "r");
-    if (!file)
-        throw Exception("Could not open prefab patch %s", patchPath.c_str());
+    if (!file) {
+        if (settings::devMode) {
+            INFO("[Prefabs] Could not open patch %s", patchPath.c_str());
+        }
+        return nullptr;
+    }
     DEFER({ std::fclose(file); });
 
     json_error_t error;
     json_t* rootJ = json_loadf(file, 0, &error);
-    if (!rootJ)
-        throw Exception("Failed to load patch. JSON parsing error at %s %d:%d %s",
-            error.source,
-            error.line,
-            error.column,
-            error.text);
-
     if (!rootJ) {
+        if (settings::devMode) {
+            INFO("[Prefabs] Failed to load patch. JSON parsing error at %s %d:%d %s",
+                error.source,
+                error.line,
+                error.column,
+                error.text);
+        }
         return nullptr;
     }
 
