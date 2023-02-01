@@ -1,5 +1,6 @@
 #include "PrefabItem.hpp"
 #include <patch.hpp>
+#include "utils/patches.hpp"
 
 PrefabItem::PrefabItem(Prefabs* module, Prefab prefab)
 {
@@ -27,11 +28,12 @@ void PrefabItem::onButton(const event::Button& e)
         auto rack = APP->scene->rack;
 
         // if it's a .vcv file, unarchive it first
-        if (extension == "vcv") {
+        if (extension == "vcv" && !isPatchLegacyV1(prefab.filename)) {
             auto patchRoot = asset::user("prefab-tmp");
+            auto patchPath = patchRoot + '/' + "patch.json";
+
             system::createDirectories(patchRoot);
             system::unarchiveToDirectory(prefab.filename, patchRoot);
-            auto patchPath = patchRoot + '/' + "patch.json";
             rack->loadSelection(patchPath);
         }
         else {

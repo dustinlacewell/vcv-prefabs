@@ -4,6 +4,8 @@
 #include "PatchSource.hpp"
 #include "PrefabSource.hpp"
 #include "utils/files.hpp"
+#include "utils/logging.hpp"
+#include "utils/patches.hpp"
 
 using namespace rack;
 
@@ -18,24 +20,24 @@ json_t* PatchSource::loadFile(std::string path)
         return nullptr;
     }
 
-    if (settings::devMode) {
-        INFO("[Prefabs] Loading patch from %s", path.c_str());
-    }
+    DINFO("[Prefabs] Loading patch from %s", path.c_str());
 
     auto patchRoot = asset::user("prefab-tmp");
     system::createDirectories(patchRoot);
-
-    if (settings::devMode) {
-        INFO("[Prefabs] Unpacking patch to %s", patchRoot.c_str());
-    }
-    system::unarchiveToDirectory(path, patchRoot);
-
     auto patchPath = system::join(patchRoot, "patch.json");
+
+    if (isPatchLegacyV1(path)) {
+        DINFO("[Prefabs] Patch is legacy: %s", path.c_str());
+        system::copy(path, system::join(path, patchPath));
+    }
+    else {
+        DINFO("[Prefabs] Unpacking patch to %s", patchRoot.c_str());
+        system::unarchiveToDirectory(path, patchRoot);
+    }
+
     FILE* file = std::fopen(patchPath.c_str(), "r");
     if (!file) {
-        if (settings::devMode) {
-            INFO("[Prefabs] Could not open patch %s", patchPath.c_str());
-        }
+        DINFO("[Prefabs] Could not open patch %s", patchPath.c_str());
         return nullptr;
     }
     DEFER({ std::fclose(file); });
@@ -44,7 +46,7 @@ json_t* PatchSource::loadFile(std::string path)
     json_t* rootJ = json_loadf(file, 0, &error);
     if (!rootJ) {
         if (settings::devMode) {
-            INFO("[Prefabs] Failed to load patch. JSON parsing error at %s %d:%d %s",
+            DINFO("[Prefabs] Failed to load patch. JSON parsing error at %s %d:%d %s",
                 error.source,
                 error.line,
                 error.column,
