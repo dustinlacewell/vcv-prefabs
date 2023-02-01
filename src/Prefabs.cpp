@@ -39,6 +39,9 @@ Prefabs::Prefabs()
     prefabs = PrefabStore();
     prefabs.refresh();
 
+    patches = PatchStore();
+    patches.refresh();
+
     tagManager = ModuleTagManager();
 }
 

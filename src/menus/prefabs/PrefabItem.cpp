@@ -20,7 +20,21 @@ void PrefabItem::onButton(const event::Button& e)
     }
     if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_LEFT) {
         auto rack = APP->scene->rack;
-        rack->loadSelection(prefab.filename);
+
+        // get prefab.filename's extension
+        std::string extension = prefab.filename.substr(prefab.filename.find_last_of(".") + 1);
+
+        // if it's a .vcv file, unarchive it first
+        if (extension == "vcv") {
+            auto patchRoot = asset::user("prefab-tmp");
+            system::createDirectories(patchRoot);
+            system::unarchiveToDirectory(prefab.filename, patchRoot);
+            auto patchPath = patchRoot + '/' + "patch.json";
+            rack->loadSelection(patchPath);
+        }
+        else {
+            rack->loadSelection(prefab.filename);
+        }
 
         for (auto mw : rack->getSelected()) {
             e.consume(mw);

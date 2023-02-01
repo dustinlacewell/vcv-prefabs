@@ -60,6 +60,24 @@ void PrefabSource::addPrefab(Prefab prefab)
     }
 }
 
+json_t* PrefabSource::loadFile(std::string path)
+{
+    std::string extension = extensionFrom(path);
+
+    if (extension != "vcvs") {
+        return nullptr;
+    }
+
+    json_error_t error;
+    json_t* rootJ = json_load_file(path.c_str(), 0, &error);
+
+    if (!rootJ) {
+        return nullptr;
+    }
+
+    return rootJ;
+}
+
 bool PrefabSource::loadPrefab(std::string tagName, std::string prefabName)
 {
     std::string prefab_path = pathForPrefab(tagName, prefabName);
@@ -68,15 +86,7 @@ bool PrefabSource::loadPrefab(std::string tagName, std::string prefabName)
         return false;
     }
 
-    std::string extension = extensionFrom(prefab_path);
-
-    if (extension != "vcvs") {
-        return false;
-    }
-
-    // load file as json
-    json_error_t error;
-    json_t* rootJ = json_load_file(prefab_path.c_str(), 0, &error);
+    json_t* rootJ = loadFile(prefab_path);
 
     if (!rootJ) {
         return false;

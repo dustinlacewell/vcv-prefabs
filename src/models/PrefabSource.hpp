@@ -23,7 +23,7 @@ struct PrefabSource
 
     PrefabSource();
     PrefabSource(Plugin* plugin);
-    std::string rootPath();
+    virtual std::string rootPath();
     std::string pathForTag(std::string tagName);
     std::string pathForPrefab(std::string tagName, std::string prefabName);
 
@@ -31,5 +31,6 @@ struct PrefabSource
     void addPrefab(Prefab prefab);
 
     int crawlTag(std::string tagName);
+    virtual json_t* loadFile(std::string path);
     bool loadPrefab(std::string tagName, std::string prefabName);
 };

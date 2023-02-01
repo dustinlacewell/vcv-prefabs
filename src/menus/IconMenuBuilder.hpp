@@ -43,7 +43,31 @@ struct IconMenuBuilder
         return item;
     }
 
-    PrefabSource& getLocalSource() const { return module->prefabs.getLocalSource(); }
+    PrefabSource& getLocalPrefabSource() const { return module->prefabs.getLocalSource(); }
+    PrefabSource& getLocalPatchSource() const { return module->patches.getLocalSource(); }
+
+    void createLocalPatchesLabel() const
+    {
+        auto title = new ModularMenuLabel();
+        title->text = "Local patches:";
+        makeDefault(title);
+    }
+
+    void createLocalPatchTags() const
+    {
+        auto& localSource = module->patches.getLocalSource();
+        for (auto& [tagName, tagPatches] : localSource.tags) {
+            if (tagName == "untagged")
+                continue;
+            makeDefault(new TagItem(module, tagName, tagPatches));
+        }
+
+        // add "untagged" tag
+        auto untagged = localSource.tags.find("untagged");
+        if (untagged != localSource.tags.end()) {
+            makeDefault(new TagItem(module, "untagged", untagged->second));
+        }
+    }
 
     void createLocalPrefabsLabel() const
     {
@@ -224,6 +248,12 @@ struct IconMenuBuilder
         menu->addChild(searchBox);
     }
 
+    void createLocalPatches() const
+    {
+        createLocalPatchesLabel();
+        createLocalPatchTags();
+    }
+
     void createLocalPrefabs() const
     {
         createLocalPrefabsLabel();
@@ -272,6 +302,8 @@ struct IconMenuBuilder
         createPrefabResults();
         createLocalPrefabs();
         createPluginPrefabs();
+        createSeparator();
+        createLocalPatches();
         createSeparator();
         createModuleResults();
         createLibrary();
