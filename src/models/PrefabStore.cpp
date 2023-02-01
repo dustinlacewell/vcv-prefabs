@@ -1,9 +1,6 @@
 #include "PrefabStore.hpp"
-#include <dirent.h>
-#include <sys/stat.h>
 #include <plugin.hpp>
 #include <rack.hpp>
-#include "Prefab.hpp"
 
 using namespace rack;
 
@@ -33,7 +30,7 @@ void PrefabStore::addSource(PrefabSource source)
 int PrefabStore::total()
 {
     int total = 0;
-    for (auto [slug, source] : sources) {
+    for (auto& [slug, source] : sources) {
         total += source.total;
     }
     return total;
