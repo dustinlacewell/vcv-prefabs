@@ -15,6 +15,7 @@
 #include "menus/prefabs/PrefabItem.hpp"
 #include "menus/prefabs/TagItem.hpp"
 #include "models/ModuleIndex.hpp"
+#include "models/State.hpp"
 #include "ui/ModelBox.hpp"
 #include "ui/SearchBox.hpp"
 #include "ui/VerticalGroup.hpp"
@@ -24,12 +25,12 @@ using namespace rack;
 
 struct IconMenuBuilder
 {
-    Prefabs* module;
+    State* state;
     ModuleIndex modules;
     Menu* menu;
     SearchBox* searchBox;
 
-    IconMenuBuilder(Prefabs* module) : module(module) { modules = ModuleIndex(module); }
+    IconMenuBuilder(State* state) : state(state) { modules = ModuleIndex(state); }
 
     void createSeparator() const { menu->addChild(new MenuSeparator()); }
 
@@ -43,8 +44,8 @@ struct IconMenuBuilder
         return item;
     }
 
-    PrefabSource& getLocalPrefabSource() const { return module->prefabs.getLocalSource(); }
-    PrefabSource& getLocalPatchSource() const { return module->patches.getLocalSource(); }
+    PrefabSource& getLocalPrefabSource() const { return state->prefabs.getLocalSource(); }
+    PrefabSource& getLocalPatchSource() const { return state->patches.getLocalSource(); }
 
     void createLocalPatchesLabel() const
     {
@@ -55,17 +56,17 @@ struct IconMenuBuilder
 
     void createLocalPatchTags() const
     {
-        auto& localSource = module->patches.getLocalSource();
+        auto& localSource = state->patches.getLocalSource();
         for (auto& [tagName, tagPatches] : localSource.tags) {
             if (tagName == "untagged")
                 continue;
-            makeDefault(new TagItem(module, tagName, tagPatches));
+            makeDefault(new TagItem(state, tagName, tagPatches));
         }
 
         // add "untagged" tag
         auto untagged = localSource.tags.find("untagged");
         if (untagged != localSource.tags.end()) {
-            makeDefault(new TagItem(module, "untagged", untagged->second));
+            makeDefault(new TagItem(state, "untagged", untagged->second));
         }
     }
 
@@ -78,17 +79,17 @@ struct IconMenuBuilder
 
     void createLocalPrefabTags() const
     {
-        auto& localSource = module->prefabs.getLocalSource();
+        auto& localSource = state->prefabs.getLocalSource();
         for (auto& [tagName, tagPrefabs] : localSource.tags) {
             if (tagName == "untagged")
                 continue;
-            makeDefault(new TagItem(module, tagName, tagPrefabs));
+            makeDefault(new TagItem(state, tagName, tagPrefabs));
         }
 
         // add "untagged" tag
         auto untagged = localSource.tags.find("untagged");
         if (untagged != localSource.tags.end()) {
-            makeDefault(new TagItem(module, "untagged", untagged->second));
+            makeDefault(new TagItem(state, "untagged", untagged->second));
         }
     }
 
@@ -101,9 +102,9 @@ struct IconMenuBuilder
         };
         menu->addChild(label);
 
-        auto& localSource = module->prefabs.getLocalSource();
+        auto& localSource = state->prefabs.getLocalSource();
         for (const auto& prefab : localSource.prefabs) {
-            auto item = new PrefabItem(module, prefab);
+            auto item = new PrefabItem(state, prefab);
             item->text = prefab.getName();
             item->visibleCallback = [this, prefab]() {
                 bool nonEmpty = this->searchBox->text != "";
@@ -116,12 +117,12 @@ struct IconMenuBuilder
 
     void createLocalPrefabTagsByModule() const
     {
-        auto& localSource = module->prefabs.getLocalSource();
+        auto& localSource = state->prefabs.getLocalSource();
         auto pluginsItem = makeDefault(new ModularMenuItem());
-        pluginsItem->text = "by module:";
+        pluginsItem->text = "by state:";
         pluginsItem->childMenuCallback = [this, plugins = localSource.plugins](ModularMenuItem* item, Menu* menu) {
             for (auto [pluginName, pluginModules] : plugins) {
-                auto pluginItem = new PluginItem(module, pluginName, pluginModules);
+                auto pluginItem = new PluginItem(state, pluginName, pluginModules);
                 menu->addChild(pluginItem);
             }
         };
@@ -141,22 +142,22 @@ struct IconMenuBuilder
         for (auto& [tagName, tagPrefabs] : source.tags) {
             if (tagName == "untagged")
                 continue;
-            auto tag = new TagItem(module, tagName, tagPrefabs);
+            auto tag = new TagItem(state, tagName, tagPrefabs);
             widgets.push_back(tag);
         }
 
         // get untagged
         auto untagged = source.tags.find("untagged");
         if (untagged != source.tags.end()) {
-            auto tag = new TagItem(module, "untagged", untagged->second);
+            auto tag = new TagItem(state, "untagged", untagged->second);
             widgets.push_back(tag);
         }
 
         auto pluginsItem = new ModularMenuItem();
-        pluginsItem->text = "by module:";
+        pluginsItem->text = "by state:";
         pluginsItem->childMenuCallback = [this, plugins = source.plugins](ModularMenuItem* item, Menu* subMenu) {
             for (auto [pluginName, pluginModules] : plugins) {
-                auto pluginItem = new PluginItem(this->module, pluginName, pluginModules);
+                auto pluginItem = new PluginItem(this->state, pluginName, pluginModules);
                 subMenu->addChild(pluginItem);
             }
         };
@@ -167,7 +168,7 @@ struct IconMenuBuilder
 
     void createPluginPrefabResults()
     {
-        for (const auto& source : module->prefabs.sources) {
+        for (const auto& source : state->prefabs.sources) {
             const auto& sourceName = source.first;
             const auto& sourcePrefabs = source.second;
 
@@ -192,7 +193,7 @@ struct IconMenuBuilder
     void createModuleSearchResults()
     {
         for (int i = 0; i < 128; i++) {
-            auto item = new LibraryResultItem(module, &modules, i);
+            auto item = new LibraryResultItem(state, &modules, i);
             menu->addChild(item);
         }
     }
@@ -201,7 +202,7 @@ struct IconMenuBuilder
     {
         auto moreItem = new ModularMenuLabel();
         moreItem->visibleCallback = [this, moreItem]() {
-            auto max = this->module->searchResultsQuantity.getValue();
+            auto max = this->state->searchResultsQuantity.getValue();
             if (this->modules.results.size() > max) {
                 moreItem->text = rack::string::f("%d more results", (int)(this->modules.results.size() - max));
                 return true;
@@ -215,7 +216,7 @@ struct IconMenuBuilder
     {
         bool favoritesOnly = !modPressed(RACK_MOD_CTRL);
         auto label = favoritesOnly ? "Favorites:" : "Modules:";
-        auto pluginMenu = new LibraryPluginMenu(module, label, favoritesOnly);
+        auto pluginMenu = new LibraryPluginMenu(state, label, favoritesOnly);
         pluginMenu->visibleCallback = [this]() {
             return searchBox->text == "";
         };
@@ -226,7 +227,7 @@ struct IconMenuBuilder
     {
         bool favoritesOnly = !modPressed(RACK_MOD_CTRL);
         auto label = favoritesOnly ? "Favorites by tag:" : "Modules by tag:";
-        auto tagIndexMenu = new LibraryTagMenu(module, label, favoritesOnly);
+        auto tagIndexMenu = new LibraryTagMenu(state, label, favoritesOnly);
         tagIndexMenu->visibleCallback = [this]() {
             return searchBox->text == "";
         };

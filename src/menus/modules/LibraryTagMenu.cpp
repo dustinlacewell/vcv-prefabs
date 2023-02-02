@@ -5,9 +5,9 @@
 #include "LibraryTagItem.hpp"
 #include "LibraryTagMenu.hpp"
 
-LibraryTagMenu::LibraryTagMenu(Prefabs* module, std::string label, bool favoritesOnly)
+LibraryTagMenu::LibraryTagMenu(State* state, std::string label, bool favoritesOnly)
 {
-    this->module = module;
+    this->state = state;
     this->text = label;
     this->favoritesOnly = favoritesOnly;
 
@@ -16,14 +16,14 @@ LibraryTagMenu::LibraryTagMenu(Prefabs* module, std::string label, bool favorite
         label->text = "Tags";
         indexSubMenu->addChild(label);
 
-        auto hiddenTags = this->module->tagManager.hiddenTags;
+        auto hiddenTags = this->state->tagManager.hiddenTags;
 
         for (int tagId = 0; tagId < (int)tag::tagAliases.size(); tagId++) {
             if (hiddenTags.find(tagId) != hiddenTags.end()) {
                 continue;
             }
 
-            auto tagItem = new LibraryTagItem(this->module, tagId, favoritesOnly);
+            auto tagItem = new LibraryTagItem(this->state, tagId, favoritesOnly);
             indexSubMenu->addChild(tagItem);
         }
     };

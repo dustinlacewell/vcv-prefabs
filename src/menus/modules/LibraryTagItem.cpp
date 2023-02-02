@@ -4,9 +4,9 @@
 #include "LibraryPluginItem.hpp"
 #include "LibraryTagItem.hpp"
 
-LibraryTagItem::LibraryTagItem(Prefabs* module, int tagId, bool favoritesOnly)
+LibraryTagItem::LibraryTagItem(State* state, int tagId, bool favoritesOnly)
 {
-    this->module = module;
+    this->state = state;
     this->tagId = tagId;
     this->text = tag::getTag(tagId);
     this->favoritesOnly = favoritesOnly;
@@ -37,7 +37,7 @@ LibraryTagItem::LibraryTagItem(Prefabs* module, int tagId, bool favoritesOnly)
 
     this->childMenuCallback = [this](ModularMenuItem* item, Menu* tagSubMenu) {
         for (auto data : this->plugins) {
-            auto subMenu = new LibraryPluginItem(this->module, data.plugin, data.modules);
+            auto subMenu = new LibraryPluginItem(this->state, data.plugin, data.modules);
             tagSubMenu->addChild(subMenu);
         }
     };

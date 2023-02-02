@@ -5,14 +5,14 @@
 
 using namespace rack;
 
-#include "Prefabs.hpp"
 #include "menus/ModularMenuItem.hpp"
+#include "models/State.hpp"
 
 struct LibraryPluginMenu : ModularMenuItem
 {
-    Prefabs* module;
+    State* state;
     std::string label;
     bool favoritesOnly = false;
 
-    LibraryPluginMenu(Prefabs* module, std::string label, bool favoritesOnly = false);
+    LibraryPluginMenu(State* state, std::string label, bool favoritesOnly = false);
 };

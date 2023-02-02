@@ -3,128 +3,73 @@
 #include <rack.hpp>
 
 #include "Prefabs.hpp"
+#include "utils/logging.hpp"
 #include "widgets/PrefabsWidget.hpp"
 
 using namespace rack::dsp;
+
+bool locked = false;
 
 Prefabs::Prefabs()
 {
     config(PARAMS_LEN, INPUTS_LEN, OUTPUTS_LEN, LIGHTS_LEN);
     configLight(STATUS_LIGHT, "Status light");
 
-    searchResultsQuantity = SimpleQuantity();
-    searchResultsQuantity.label = "Number of search results";
-    searchResultsQuantity.minValue = 8;
-    searchResultsQuantity.maxValue = 128;
-    searchResultsQuantity.defaultValue = 32;
-    searchResultsQuantity.value = 32;
-    searchResultsQuantity.rounded = true;
-
-    colorQuantity = SimpleQuantity();
-    colorQuantity.label = "Icon color";
-    colorQuantity.minValue = 0;
-    colorQuantity.maxValue = 1;
-    colorQuantity.defaultValue = .25;
-    colorQuantity.value = .25;
-    colorQuantity.rounded = false;
-
-    discoSpeedQuantity = SimpleQuantity();
-    discoSpeedQuantity.label = "Disco speed";
-    discoSpeedQuantity.minValue = 0.0f;
-    discoSpeedQuantity.maxValue = 0.03f;
-    discoSpeedQuantity.defaultValue = 0.0;
-    discoSpeedQuantity.value = 0.0;
-    discoSpeedQuantity.rounded = false;
-
-    prefabs = PrefabStore();
-    prefabs.refresh();
-
-    patches = PatchStore();
-    patches.refresh();
-
-    tagManager = ModuleTagManager();
-}
-
-void Prefabs::show()
-{
-    prefabs.refresh();
-    this->showing = true;
-    lights[STATUS_LIGHT].setBrightness(1.0f);
-    params[SHOW_PARAM].setValue(1.0f);
-}
-
-void Prefabs::hide()
-{
-    this->showing = false;
-    lights[STATUS_LIGHT].setBrightness(0.0f);
-    params[SHOW_PARAM].setValue(0.0f);
-}
-
-void Prefabs::toggle()
-{
-    if (this->showing) {
-        this->hide();
-    }
-    else {
-        this->show();
-    }
+    widget = nullptr;
+    float currentShow = params[SHOW_PARAM].getValue();
+    lastShowParam = currentShow;
 }
 
 void Prefabs::process(const ProcessArgs& args)
 {
-    bool shouldShow = params[SHOW_PARAM].getValue() > 0.5f;
-    if (this->showing && !shouldShow) {
-        this->hide();
+    bool hasWidget = widget != nullptr;
+
+    if (!hasWidget) {
+        widget = findWidget();
+
+        if (locked) {
+            return;
+        }
+
+        if (widget == nullptr) {
+            locked = true;
+            widget = new IconWidget();
+            APP->scene->addChildBelow(widget, APP->scene->browser);
+            locked = false;
+        }
+
+        lastShowParam = widget->state->showing ? 1.0 : 0.0;
     }
-    else if (!this->showing && shouldShow) {
-        this->show();
+
+    float currentShow = params[SHOW_PARAM].getValue();
+    bool buttonClicked = abs(lastShowParam - currentShow) > 0.001;
+    lastShowParam = currentShow;
+
+    if (buttonClicked) {
+        widget->state->showing = !(widget->state->showing);
     }
+
+    lights[STATUS_LIGHT].setBrightness(widget->state->showing ? 1.0 : 0.0);
 }
 
-json_t* Prefabs::dataToJson()
+IconWidget* Prefabs::findWidget()
 {
-    json_t* rootJ = json_object();
-    json_object_set_new(rootJ, "showing", json_boolean(showing));
-    json_object_set_new(rootJ, "pos", json_pack("[f, f]", pos.x, pos.y));
-    json_object_set_new(rootJ, "searchResultsQuantity", searchResultsQuantity.toJson());
-    json_object_set_new(rootJ, "colorQuantity", colorQuantity.toJson());
-    json_object_set_new(rootJ, "discoSpeedQuantity", discoSpeedQuantity.toJson());
-    json_object_set_new(rootJ, "tagManager", tagManager.toJson());
-    return rootJ;
-}
-
-void Prefabs::dataFromJson(json_t* rootJ)
-{
-    json_t* showJ = json_object_get(rootJ, "showing");
-    if (showJ)
-        showing = json_boolean_value(showJ);
-
-    json_t* posJ = json_object_get(rootJ, "pos");
-    if (posJ)
-        pos = rack::Vec(json_real_value(json_array_get(posJ, 0)), json_real_value(json_array_get(posJ, 1)));
-
-    if (showing) {
-        this->show();
-    }
-    else {
-        this->hide();
+    if (widget) {
+        return widget;
     }
 
-    json_t* searchResultsQuantityJ = json_object_get(rootJ, "searchResultsQuantity");
-    if (searchResultsQuantityJ)
-        searchResultsQuantity.fromJson(searchResultsQuantityJ);
+    for (Widget* w : APP->scene->children) {
 
-    json_t* colorQuantityJ = json_object_get(rootJ, "colorQuantity");
-    if (colorQuantityJ)
-        colorQuantity.fromJson(colorQuantityJ);
+        IconWidget* foundWidget = dynamic_cast<IconWidget*>(w);
 
-    json_t* discoSpeedQuantityJ = json_object_get(rootJ, "discoSpeedQuantity");
-    if (discoSpeedQuantityJ)
-        discoSpeedQuantity.fromJson(discoSpeedQuantityJ);
+        if (!foundWidget) {
+            continue;
+        }
 
-    json_t* tagManagerJ = json_object_get(rootJ, "tagManager");
-    if (tagManagerJ)
-        tagManager.fromJson(tagManagerJ);
+        return foundWidget;
+    }
+
+    return nullptr;
 }
 
 Model* modelPrefabs = createModel<Prefabs, PrefabsWidget>("Prefabs");

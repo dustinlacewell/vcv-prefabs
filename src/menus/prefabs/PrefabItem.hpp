@@ -4,16 +4,16 @@
 
 using namespace rack;
 
-#include "Prefabs.hpp"
 #include "menus/ModularMenuItem.hpp"
+#include "models/State.hpp"
 
 struct PrefabItem : ModularMenuItem
 {
-    Prefabs* module;
+    State* state;
     Prefab prefab;
     Tooltip* tooltip;
 
-    PrefabItem(Prefabs* module, Prefab prefab);
+    PrefabItem(State* module, Prefab prefab);
     void onButton(const event::Button& e) override;
     void onHover(const event::Hover& e) override;
     void onEnter(const event::Enter& e) override;

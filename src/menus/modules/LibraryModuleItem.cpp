@@ -16,7 +16,7 @@ LibraryModuleItem::LibraryModuleItem(Model* model)
 
         // Record history
         history::ComplexAction* h = new history::ComplexAction;
-        h->name = "add module";
+        h->name = "add state";
 
         auto newModule = model->createModule();
         APP->engine->addModule(newModule);

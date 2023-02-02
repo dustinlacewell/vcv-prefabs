@@ -1,11 +1,9 @@
 #include <rack.hpp>
 #include <ui/Slider.hpp>
 
+#include "IconWidget.hpp"
 #include "Prefabs.hpp"
 #include "PrefabsWidget.hpp"
-
-#include "IconWidget.hpp"
-#include "menus/ModularMenuItem.hpp"
 #include "plugin.h"
 #include "ui/LedLabel.hpp"
 
@@ -27,19 +25,6 @@ PrefabsWidget::PrefabsWidget(Prefabs* module)
     totalLabel->text = "000";
     totalLabel->box.pos = Vec(12, 35);
     addChild(totalLabel);
-
-    if (module) {
-        iconWidget = new IconWidget(module);
-        iconWidget->box.pos = module->pos;
-        APP->scene->addChildBelow(iconWidget, APP->scene->browser);
-    }
-}
-
-PrefabsWidget::~PrefabsWidget()
-{
-    if (iconWidget) {
-        iconWidget->requestDelete();
-    }
 }
 
 void PrefabsWidget::step()
@@ -54,10 +39,18 @@ void PrefabsWidget::step()
         return;
     }
 
-    auto total = min(999, prefabsModule->prefabs.total());
+    auto widget = prefabsModule->widget;
+
+    if (!widget) {
+        return;
+    }
+
+    auto state = prefabsModule->widget->state;
+
+    auto total = min(999, state->prefabs.total());
 
     if (total != lastCount) {
-        auto totalStr = std::to_string(prefabsModule->prefabs.total());
+        auto totalStr = std::to_string(state->prefabs.total());
         while (totalStr.length() < 3) {
             totalStr = "0" + totalStr;
         }
@@ -83,24 +76,36 @@ void PrefabsWidget::appendContextMenu(Menu* menu)
         return;
     }
 
+    auto widget = prefabsModule->widget;
+
+    if (!widget) {
+        return;
+    }
+
+    auto state = prefabsModule->widget->state;
+
+    if (state == nullptr) {
+        return;
+    }
+
     auto searchResults = new rack::ui::Slider();
     searchResults->box.size.x = 220.0f;
-    searchResults->quantity = &prefabsModule->searchResultsQuantity;
+    searchResults->quantity = &state->searchResultsQuantity;
     menu->addChild(searchResults);
 
     auto colorResults = new rack::ui::Slider();
     colorResults->box.size.x = 220.0f;
-    colorResults->quantity = &prefabsModule->colorQuantity;
+    colorResults->quantity = &state->colorQuantity;
     menu->addChild(colorResults);
 
     auto discoSpeed = new rack::ui::Slider();
     discoSpeed->box.size.x = 220.0f;
-    discoSpeed->quantity = &prefabsModule->discoSpeedQuantity;
+    discoSpeed->quantity = &state->discoSpeedQuantity;
     menu->addChild(discoSpeed);
 
-    auto sortMenu = prefabsModule->moduleSorter.createSortTypeMenu();
+    auto sortMenu = state->moduleSorter.createSortTypeMenu();
     menu->addChild(sortMenu);
 
-    auto tagMenu = prefabsModule->tagManager.createToggleMenu();
+    auto tagMenu = state->tagManager.createToggleMenu();
     menu->addChild(tagMenu);
 }

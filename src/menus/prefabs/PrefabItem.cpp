@@ -2,9 +2,9 @@
 #include <patch.hpp>
 #include "utils/patches.hpp"
 
-PrefabItem::PrefabItem(Prefabs* module, Prefab prefab)
+PrefabItem::PrefabItem(State* state, Prefab prefab)
 {
-    this->module = module;
+    this->state = state;
     this->text = prefab.getName();
     this->rightText = RIGHT_ARROW;
     this->prefab = prefab;

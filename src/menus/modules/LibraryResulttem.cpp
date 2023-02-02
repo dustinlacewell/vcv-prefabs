@@ -2,17 +2,16 @@
 
 #include "LibraryResultItem.hpp"
 #include "ui/ModelBox.hpp"
-#include "ui/VerticalGroup.hpp"
 
-LibraryResultItem::LibraryResultItem(Prefabs* module, ModuleIndex* modules, int index)
+LibraryResultItem::LibraryResultItem(State* state, ModuleIndex* modules, int index)
 {
-    this->module = module;
+    this->state = state;
     this->modules = modules;
     this->index = index;
 
     this->visibleCallback = [this]() {
         auto size = this->modules->results.size();
-        auto maxSize = this->module->searchResultsQuantity.getValue();
+        auto maxSize = this->state->searchResultsQuantity.getValue();
         auto limit = fmin(size, maxSize);
 
         if (this->index < limit) {
@@ -40,9 +39,9 @@ LibraryResultItem::LibraryResultItem(Prefabs* module, ModuleIndex* modules, int 
         }
         return false;
     };
-    this->buttonCallback = [module, modules, index](const event::Button& e) {
+    this->buttonCallback = [state, modules, index](const event::Button& e) {
         auto size = modules->results.size();
-        auto maxSize = module->searchResultsQuantity.getValue();
+        auto maxSize = state->searchResultsQuantity.getValue();
         auto limit = fmin(size, maxSize);
 
         if (index >= limit) {
@@ -58,7 +57,7 @@ LibraryResultItem::LibraryResultItem(Prefabs* module, ModuleIndex* modules, int 
 
         // Record history
         history::ComplexAction* h = new history::ComplexAction;
-        h->name = "add module";
+        h->name = "add state";
 
         auto newModule = model->createModule();
         APP->engine->addModule(newModule);

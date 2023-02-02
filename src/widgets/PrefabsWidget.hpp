@@ -6,13 +6,11 @@
 
 struct PrefabsWidget : ModuleWidget
 {
-    IconWidget* iconWidget {nullptr};
     LedLabel* totalLabel;
 
     int lastCount = 0;
 
     PrefabsWidget(Prefabs* module);
-    ~PrefabsWidget();
 
     void step() override;
     void draw(const DrawArgs& args) override;

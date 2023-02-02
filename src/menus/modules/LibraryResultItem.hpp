@@ -4,15 +4,15 @@
 
 using namespace rack;
 
-#include "Prefabs.hpp"
 #include "menus/ModularMenuItem.hpp"
 #include "models/ModuleIndex.hpp"
+#include "models/State.hpp"
 
 struct LibraryResultItem : ModularMenuItem
 {
-    Prefabs* module;
+    State* state;
     ModuleIndex* modules;
     int index;
 
-    LibraryResultItem(Prefabs* module, ModuleIndex* modules, int index);
+    LibraryResultItem(State* state, ModuleIndex* modules, int index);
 };

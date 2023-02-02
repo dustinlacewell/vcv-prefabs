@@ -7,6 +7,7 @@
 #include "models/Prefab.hpp"
 #include "models/PrefabStore.hpp"
 #include "models/SimpleQuantity.hpp"
+#include "widgets/IconWidget.hpp"
 
 using namespace rack;
 
@@ -31,27 +32,12 @@ struct Prefabs : rack::Module
         LIGHTS_LEN
     };
 
-    bool showing = true;
-    Vec pos = Vec(30, 30);
+    float lastShowParam;
 
-    ModuleTagManager tagManager;
-    ModuleSorter moduleSorter;
-
-    PrefabStore prefabs;
-    PatchStore patches;
-
-    SimpleQuantity searchResultsQuantity;
-    SimpleQuantity colorQuantity;
-    SimpleQuantity discoSpeedQuantity;
+    IconWidget* widget;
 
     Prefabs();
 
-    void show();
-    void hide();
-    void toggle();
-
-    json_t* dataToJson() override;
-    void dataFromJson(json_t* rootJ) override;
-
     void process(const ProcessArgs& args) override;
+    IconWidget* findWidget();
 };

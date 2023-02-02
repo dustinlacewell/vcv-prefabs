@@ -4,7 +4,6 @@
 
 using namespace rack;
 
-#include "Prefabs.hpp"
 #include "menus/ModularMenuItem.hpp"
 
 struct LibraryModuleItem : ModularMenuItem

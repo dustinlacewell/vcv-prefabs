@@ -29,7 +29,7 @@ The prefabs can then be pulled into a patch by right-clicking on the Prefabs wid
 
 <img align="right" src="images/screenshot.png">
 
-The Prefabs module is simple and shows you how many prefabs you have available at the top.
+The Prefabs state is simple and shows you how many prefabs you have available at the top.
 
 ### The Widget toggle
 
@@ -63,7 +63,7 @@ Just click or drag the prefab into the patch.
 <img src="images/prefab.gif">
 </p>
 
-Below the tag list, there is a sub-menu `by module:` where your prefabs are organized by the module they use.
+Below the tag list, there is a sub-menu `by state:` where your prefabs are organized by the state they use.
 
 ### Plugin Prefabs
 
@@ -91,7 +91,7 @@ Pressing `ctrl` will show all modules, not just the ones you have favorited.
 
 #### Adding favorites
 
-Right-clicking on a module will bring up a menu where you can add it to your favorites.
+Right-clicking on a state will bring up a menu where you can add it to your favorites.
 
 <p align="center">
 <img src="images/new-favorites.gif">
@@ -117,7 +117,7 @@ This will open the save dialog. Save your prefab under a folder to give it a tag
 
 # Settings
 
-Right-clicking the Prefabs module will bring up a menu where you can change some settings.
+Right-clicking the Prefabs state will bring up a menu where you can change some settings.
 
 ## Search results
 

@@ -4,15 +4,15 @@
 
 using namespace rack;
 
-#include "Prefabs.hpp"
 #include "menus/ModularMenuItem.hpp"
+#include "models/State.hpp"
 
 struct PluginItem : ModularMenuItem
 {
-    Prefabs* module;
+    State* state;
     std::string pluginName;
     ModuleMap modules;
 
-    PluginItem(Prefabs* module, std::string pluginName, ModuleMap modules);
+    PluginItem(State* module, std::string pluginName, ModuleMap modules);
     Menu* createChildMenu() override;
 };

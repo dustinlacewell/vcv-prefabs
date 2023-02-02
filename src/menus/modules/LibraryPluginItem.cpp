@@ -3,9 +3,9 @@
 #include "LibraryModuleItem.hpp"
 #include "LibraryPluginItem.hpp"
 
-LibraryPluginItem::LibraryPluginItem(Prefabs* module, Plugin* plugin, std::vector<Model*> modules)
+LibraryPluginItem::LibraryPluginItem(State* state, Plugin* plugin, std::vector<Model*> modules)
 {
-    this->module = module;
+    this->state = state;
     this->plugin = plugin;
     this->modules = modules;
     this->text = plugin->name;
@@ -20,7 +20,7 @@ LibraryPluginItem::LibraryPluginItem(Prefabs* module, Plugin* plugin, std::vecto
 std::vector<MenuItem*> LibraryPluginItem::buildModuleSubItems() const
 {
     std::vector<MenuItem*> items;
-    auto sorted = module->moduleSorter.sort(modules);
+    auto sorted = state->moduleSorter.sort(modules);
 
     std::transform(sorted.begin(), sorted.end(), std::back_inserter(items), [](Model* model) {
         return new LibraryModuleItem(model);

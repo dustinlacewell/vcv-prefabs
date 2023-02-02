@@ -6,7 +6,7 @@ using namespace rack;
 
 struct DiscoUpdater
 {
-    Prefabs* module;
+    State* state;
 
     float amount = 0.5f;
     float direction = 1.f;
@@ -15,23 +15,23 @@ struct DiscoUpdater
 
     DiscoUpdater()
     {
-        this->module = nullptr;
+        this->state = nullptr;
         discoDivider.setDivision(2);
     }
 
-    DiscoUpdater(Prefabs* module)
+    DiscoUpdater(State* state)
     {
-        this->module = module;
+        this->state = state;
         discoDivider.setDivision(2);
     }
 
     void process()
     {
-        if (!module) {
+        if (!state) {
             return;
         }
         if (discoDivider.process()) {
-            amount += module->discoSpeedQuantity.getValue() * direction;
+            amount += state->discoSpeedQuantity.getValue() * direction;
             if (amount > 1) {
                 amount = 1;
                 direction *= -1;

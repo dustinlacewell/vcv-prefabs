@@ -3,9 +3,9 @@
 #include "PrefabItem.hpp"
 #include "TagItem.hpp"
 
-TagItem::TagItem(Prefabs* module, std::string tag, std::set<Prefab> prefabs)
+TagItem::TagItem(State* state, std::string tag, std::set<Prefab> prefabs)
 {
-    this->module = module;
+    this->state = state;
     this->tag = tag;
     this->text = tag;
     this->prefabs = prefabs;
@@ -16,7 +16,7 @@ Menu* TagItem::createChildMenu()
 {
     auto menu = new Menu;
     for (auto prefab : prefabs) {
-        auto item = new PrefabItem(module, prefab);
+        auto item = new PrefabItem(state, prefab);
         menu->addChild(item);
     }
     return menu;

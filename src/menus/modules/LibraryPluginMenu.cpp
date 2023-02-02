@@ -4,13 +4,13 @@
 #include "LibraryPluginItem.hpp"
 #include "LibraryPluginMenu.hpp"
 
-LibraryPluginMenu::LibraryPluginMenu(Prefabs* module, std::string label, bool favoritesOnly)
+LibraryPluginMenu::LibraryPluginMenu(State* state, std::string label, bool favoritesOnly)
 {
-    this->module = module;
+    this->state = state;
     this->text = label;
     this->favoritesOnly = favoritesOnly;
 
-    this->childMenuCallback = [module = this->module, favoritesOnly](ModularMenuItem* item, Menu* indexSubMenu) {
+    this->childMenuCallback = [module = this->state, favoritesOnly](ModularMenuItem* item, Menu* indexSubMenu) {
         for (auto plugin : rack::plugin::plugins) {
             auto modules = std::vector<Model*>();
 

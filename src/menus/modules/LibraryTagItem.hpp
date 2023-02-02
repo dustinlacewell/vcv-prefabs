@@ -5,8 +5,8 @@
 
 using namespace rack;
 
-#include "Prefabs.hpp"
 #include "menus/ModularMenuItem.hpp"
+#include "models/State.hpp"
 
 struct PluginSubMenuData
 {
@@ -16,11 +16,11 @@ struct PluginSubMenuData
 
 struct LibraryTagItem : ModularMenuItem
 {
-    Prefabs* module;
+    State* state;
     int tagId;
     bool favoritesOnly = false;
 
     std::vector<PluginSubMenuData> plugins;
 
-    LibraryTagItem(Prefabs* module, int tagId, bool favoritesOnly = false);
+    LibraryTagItem(State* state, int tagId, bool favoritesOnly = false);
 };

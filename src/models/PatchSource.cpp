@@ -22,7 +22,7 @@ json_t* PatchSource::loadFile(std::string path)
 
     DINFO("[Prefabs] Loading patch from %s", path.c_str());
 
-    auto patchRoot = asset::user("prefab-tmp");
+    auto patchRoot = asset::user("prefabs-tmp");
     system::createDirectories(patchRoot);
     auto patchPath = system::join(patchRoot, "patch.json");
 
@@ -32,7 +32,13 @@ json_t* PatchSource::loadFile(std::string path)
     }
     else {
         DINFO("[Prefabs] Unpacking patch to %s", patchRoot.c_str());
-        system::unarchiveToDirectory(path, patchRoot);
+        try {
+            system::unarchiveToDirectory(path, patchRoot);
+        }
+        catch (std::exception& e) {
+            DINFO("[Prefabs] Failed to unpack patch: %s", e.what());
+            return nullptr;
+        }
     }
 
     FILE* file = std::fopen(patchPath.c_str(), "r");
@@ -54,6 +60,8 @@ json_t* PatchSource::loadFile(std::string path)
         }
         return nullptr;
     }
+
+    // unlink(patchRoot.c_str());
 
     return rootJ;
 }

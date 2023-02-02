@@ -3,9 +3,9 @@
 #include "ModuleItem.hpp"
 #include "PluginItem.hpp"
 
-PluginItem::PluginItem(Prefabs* module, std::string pluginName, ModuleMap modules)
+PluginItem::PluginItem(State* state, std::string pluginName, ModuleMap modules)
 {
-    this->module = module;
+    this->state = state;
     this->pluginName = pluginName;
     this->rightText = RIGHT_ARROW;
     this->text = pluginName;
@@ -16,7 +16,7 @@ Menu* PluginItem::createChildMenu()
 {
     auto menu = new Menu;
     for (auto [moduleName, prefabSet] : modules) {
-        auto item = new ModuleItem(module, moduleName, prefabSet);
+        auto item = new ModuleItem(state, moduleName, prefabSet);
         menu->addChild(item);
     }
     return menu;

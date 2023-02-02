@@ -86,10 +86,10 @@ void ModuleIndex::search(std::string searchString)
         tokens.push_back(t);
     }
 
-    // Search every module in every plugin
+    // Search every state in every plugin
     for (auto& plugin : rack::plugin::plugins) {
         for (auto& model : plugin->models) {
-            // Search every token in the module's name
+            // Search every token in the state's name
             for (auto& token : tokens) {
                 bool token_found = false;
                 auto token_lower = token;
@@ -102,7 +102,7 @@ void ModuleIndex::search(std::string searchString)
                     addNameMatch(model, token_lower, namePos == 0 ? 2 : 1);
                 }
 
-                // Search every token in the module's tags
+                // Search every token in the state's tags
                 for (auto& tagId : model->tagIds) {
                     bool shouldBreak = false;
                     for (const std::string& tagAlias : tag::tagAliases[tagId]) {
@@ -115,7 +115,7 @@ void ModuleIndex::search(std::string searchString)
                     }
                 }
 
-                // Search every token in the module's brand
+                // Search every token in the state's brand
                 auto brand_lower = model->plugin->brand;
                 std::transform(brand_lower.begin(), brand_lower.end(), brand_lower.begin(), ::tolower);
                 int brandPos = brand_lower.find(token_lower);
@@ -132,7 +132,7 @@ void ModuleIndex::search(std::string searchString)
     }
 
     std::sort(_preResults.begin(), _preResults.end(), [this](Result a, Result b) {
-        if (module->moduleSorter.sortType > SortType::USAGE) {
+        if (state->moduleSorter.sortType > SortType::USAGE) {
             if (a.model->isFavorite() && !b.model->isFavorite()) {
                 return true;
             }
