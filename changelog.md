@@ -1,5 +1,14 @@
 # Prefabs Changelog
 
+## 2.0.3 - 2/1/2023
+
+- Multiple Prefab module are no longer a problem, they all share the single global widget.
+- All Prefab modules share a single set of settings. So changing it here changes it everywhere.
+- Once loaded the Prefabs Widget is now permanent and persists across patch loads.
+- Prefabs and patches with missing modules can't be clicked and show tooltip with missing modules.
+- V1 patches now supported.
+- Some reliability fixes.
+
 ## 2.0.2 - 1/31/2023
 
 Ongoing menu refactors and improvements...
