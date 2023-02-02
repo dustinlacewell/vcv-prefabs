@@ -6,7 +6,8 @@ PrefabItem::PrefabItem(State* state, Prefab prefab)
 {
     this->state = state;
     this->text = prefab.getName();
-    this->rightText = RIGHT_ARROW;
+    this->rightText = "";
+    this->source = "";
     this->prefab = prefab;
     this->tooltip = new Tooltip;
     APP->scene->addChild(tooltip);
@@ -101,7 +102,7 @@ void PrefabItem::step()
         text = prefab.getName();
     }
 
-    rightText = prefab.isValid ? "" : "!";
+    rightText = prefab.isValid ? source : source + "!";
     this->disabled = !prefab.isValid;
     tooltip->box.pos = APP->scene->mousePos;
 

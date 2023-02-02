@@ -74,23 +74,89 @@ struct IconMenuBuilder
 
     void createPrefabResults() const
     {
+        auto sep = createSeparator();
+        sep->visibleCallback = [this]() {
+            return searchBox->text != "";
+        };
+
         auto label = new ModularMenuLabel();
-        label->text = "Prefabs:";
+        label->text = "Prefabs";
         label->visibleCallback = [this]() {
             return searchBox->text != "";
         };
         menu->addChild(label);
 
-        auto& localSource = state->prefabs.getLocalSource();
+        auto sep2 = createSeparator();
+        sep2->visibleCallback = [this]() {
+            return searchBox->text != "";
+        };
+
+        for (const auto& sourcePair : state->prefabs.sources) {
+            auto slug = sourcePair.first;
+            auto source = sourcePair.second;
+
+            for (const auto& prefab : source.prefabs) {
+                auto item = new PrefabItem(state, prefab);
+                item->source = slug;
+                item->visibleCallback = [this, prefab]() {
+                    bool nonEmpty = this->searchBox->text != "";
+                    bool found = prefab.getName().find(this->searchBox->text) != std::string::npos;
+                    return nonEmpty && found;
+                };
+                menu->addChild(item);
+            }
+        }
+    }
+
+    void createPatchResults() const
+    {
+        auto sep = createSeparator();
+        sep->visibleCallback = [this]() {
+            return searchBox->text != "";
+        };
+
+        auto label = new ModularMenuLabel();
+        label->text = "Patches";
+        label->visibleCallback = [this]() {
+            return searchBox->text != "";
+        };
+        menu->addChild(label);
+
+        auto sep2 = createSeparator();
+        sep2->visibleCallback = [this]() {
+            return searchBox->text != "";
+        };
+
+        auto& localSource = state->patches.getLocalSource();
         for (const auto& prefab : localSource.prefabs) {
             auto item = new PrefabItem(state, prefab);
-            item->text = prefab.getName();
+            item->source = "local";
             item->visibleCallback = [this, prefab]() {
                 bool nonEmpty = this->searchBox->text != "";
                 bool found = prefab.getName().find(this->searchBox->text) != std::string::npos;
                 return nonEmpty && found;
             };
             menu->addChild(item);
+        }
+
+        for (const auto& sourcePair : state->patches.sources) {
+            auto slug = sourcePair.first;
+            auto source = sourcePair.second;
+
+            if (slug == "local") {
+                continue;
+            }
+
+            for (const auto& prefab : source.prefabs) {
+                auto item = new PrefabItem(state, prefab);
+                item->source = slug;
+                item->visibleCallback = [this, prefab]() {
+                    bool nonEmpty = this->searchBox->text != "";
+                    bool found = prefab.getName().find(this->searchBox->text) != std::string::npos;
+                    return nonEmpty && found;
+                };
+                menu->addChild(item);
+            }
         }
     }
 
@@ -385,6 +451,7 @@ struct IconMenuBuilder
 
         createLocalPatches();
         createPluginPatches();
+        createPatchResults();
     }
 
     /**
@@ -416,11 +483,16 @@ struct IconMenuBuilder
     void createModuleResults()
     {
         auto label = new ModularMenuLabel();
-        label->text = "Modules:";
+        label->text = "Modules";
         label->visibleCallback = [this]() {
             return searchBox->text != "";
         };
         menu->addChild(label);
+
+        auto sep = createSeparator();
+        sep->visibleCallback = [this]() {
+            return searchBox->text != "";
+        };
 
         createModuleSearchResults();
         createModuleSearchMessage();

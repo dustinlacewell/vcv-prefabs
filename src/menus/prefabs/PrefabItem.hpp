@@ -12,6 +12,7 @@ struct PrefabItem : ModularMenuItem
     State* state;
     Prefab prefab;
     Tooltip* tooltip;
+    std::string source;
 
     PrefabItem(State* module, Prefab prefab);
     void onButton(const event::Button& e) override;
