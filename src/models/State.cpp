@@ -8,6 +8,7 @@ using namespace rack::dsp;
 State::State()
 {
     refreshEveryTime = false;
+    browserMode = false;
 
     searchResultsQuantity = SimpleQuantity();
     searchResultsQuantity.label = "Number of search results";
@@ -42,6 +43,7 @@ json_t* State::toJson()
 {
     json_t* rootJ = json_object();
     json_object_set_new(rootJ, "refreshEveryTime", json_boolean(refreshEveryTime));
+    json_object_set_new(rootJ, "browserMode", json_boolean(browserMode));
     json_object_set_new(rootJ, "showing", json_boolean(showing));
     json_object_set_new(rootJ, "pos", json_pack("[f, f]", pos.x, pos.y));
     json_object_set_new(rootJ, "searchResultsQuantity", searchResultsQuantity.toJson());
@@ -71,6 +73,10 @@ void State::fromJson(json_t* rootJ)
     json_t* refreshJ = json_object_get(rootJ, "refreshEveryTime");
     if (refreshJ)
         refreshEveryTime = json_boolean_value(refreshJ);
+
+    json_t* browserJ = json_object_get(rootJ, "browserMode");
+    if (browserJ)
+        browserMode = json_boolean_value(browserJ);
 
     json_t* showJ = json_object_get(rootJ, "showing");
     if (showJ)

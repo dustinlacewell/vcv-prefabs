@@ -16,6 +16,7 @@ struct State
     Vec pos = Vec(30, 30);
 
     bool refreshEveryTime;
+    bool browserMode;
 
     ModuleTagManager tagManager;
     ModuleSorter moduleSorter;

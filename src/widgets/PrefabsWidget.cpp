@@ -105,6 +105,32 @@ void PrefabsWidget::appendContextMenu(Menu* menu)
     };
     menu->addChild(everyTime);
 
+    auto browserMode = new ModularMenuItem();
+    browserMode->text = "Replace browser";
+    browserMode->rightText = CHECKMARK(state->browserMode);
+    browserMode->visibleCallback = [=]() {
+        browserMode->rightText = CHECKMARK(state->browserMode);
+        return true;
+    };
+    browserMode->buttonCallback = [=](const event::Button& e) {
+        if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_LEFT) {
+            state->browserMode = !state->browserMode;
+            Prefabs* prefabsModule = dynamic_cast<Prefabs*>(module);
+            if (prefabsModule) {
+                if (state->browserMode) {
+                    prefabsModule->enableBrowserMode();
+                }
+                else {
+                    prefabsModule->disableBrowserMode();
+                }
+            }
+        }
+
+        e.consume(browserMode);
+        return false;
+    };
+    menu->addChild(browserMode);
+
     auto searchResults = new rack::ui::Slider();
     searchResults->box.size.x = 220.0f;
     searchResults->quantity = &state->searchResultsQuantity;

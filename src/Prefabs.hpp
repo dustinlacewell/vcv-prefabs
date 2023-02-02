@@ -40,4 +40,6 @@ struct Prefabs : rack::Module
 
     void process(const ProcessArgs& args) override;
     IconWidget* findWidget();
+    void enableBrowserMode();
+    void disableBrowserMode();
 };

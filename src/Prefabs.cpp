@@ -4,6 +4,7 @@
 
 #include "Prefabs.hpp"
 #include "utils/logging.hpp"
+#include "widgets/FakeBrowser.hpp"
 #include "widgets/PrefabsWidget.hpp"
 
 using namespace rack::dsp;
@@ -20,6 +21,27 @@ Prefabs::Prefabs()
     lastShowParam = currentShow;
 }
 
+void Prefabs::enableBrowserMode()
+{
+    if (widget && widget->state->browserMode) {
+        auto browser = dynamic_cast<FakeBrowser*>(APP->scene->browser);
+        if (!browser) {
+            browser = new FakeBrowser();
+            browser->hide();
+        }
+    }
+}
+
+void Prefabs::disableBrowserMode()
+{
+    if (widget && !widget->state->browserMode) {
+        auto browser = dynamic_cast<FakeBrowser*>(APP->scene->browser);
+        if (browser) {
+            delete browser;
+        }
+    }
+}
+
 void Prefabs::process(const ProcessArgs& args)
 {
     bool hasWidget = widget != nullptr;
@@ -33,8 +55,10 @@ void Prefabs::process(const ProcessArgs& args)
 
         if (widget == nullptr) {
             locked = true;
+
             widget = new IconWidget();
             APP->scene->addChildBelow(widget, APP->scene->browser);
+            enableBrowserMode();
             locked = false;
         }
 
