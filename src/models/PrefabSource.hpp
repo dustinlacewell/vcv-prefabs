@@ -15,15 +15,17 @@ typedef std::map<std::string, ModuleMap> PluginMap;
 struct PrefabSource
 {
     int total = 0;
-    Plugin* plugin;
+
+    std::string slug;
+    std::string root;
 
     PrefabSet prefabs;
     TagMap tags;
     PluginMap plugins;
 
     PrefabSource();
-    PrefabSource(Plugin* plugin);
-    virtual std::string rootPath();
+    PrefabSource(std::string slug, std::string root);
+
     std::string pathForTag(std::string tagName);
     std::string pathForPrefab(std::string tagName, std::string prefabName);
 

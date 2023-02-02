@@ -25,11 +25,15 @@ struct State
     SimpleQuantity colorQuantity;
     SimpleQuantity discoSpeedQuantity;
 
+    std::set<std::tuple<std::string, std::string>> extraPrefabSources;
+    std::set<std::tuple<std::string, std::string>> extraPatchSources;
+
     State();
 
     json_t* toJson();
     void fromJson(json_t* rootJ);
 
+    void refresh();
     void save();
     void load();
 };

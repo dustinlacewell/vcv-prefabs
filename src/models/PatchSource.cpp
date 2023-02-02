@@ -10,7 +10,7 @@
 using namespace rack;
 
 PatchSource::PatchSource() : PrefabSource() {}
-PatchSource::PatchSource(Plugin* plugin) : PrefabSource(plugin) {}
+PatchSource::PatchSource(std::string slug, std::string root) : PrefabSource(slug, root) {}
 
 json_t* PatchSource::loadFile(std::string path)
 {
@@ -61,16 +61,5 @@ json_t* PatchSource::loadFile(std::string path)
         return nullptr;
     }
 
-    // unlink(patchRoot.c_str());
-
     return rootJ;
-}
-
-std::string PatchSource::rootPath()
-{
-    auto path = asset::user("patches");
-    if (plugin) {
-        path = asset::plugin(plugin, "res/patches");
-    }
-    return path;
 }

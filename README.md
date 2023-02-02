@@ -63,7 +63,7 @@ Just click or drag the prefab into the patch.
 <img src="images/prefab.gif">
 </p>
 
-Below the tag list, there is a sub-menu `by state:` where your prefabs are organized by the state they use.
+Below the tag list, there is a sub-menu `by module:` where your prefabs are organized by the modules they use.
 
 ### Plugin Prefabs
 

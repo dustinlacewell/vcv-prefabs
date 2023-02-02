@@ -32,11 +32,7 @@ State::State()
     discoSpeedQuantity.rounded = false;
 
     prefabs = PrefabStore();
-    prefabs.refresh();
-
     patches = PatchStore();
-    patches.refresh();
-
     tagManager = ModuleTagManager();
 }
 
@@ -49,6 +45,21 @@ json_t* State::toJson()
     json_object_set_new(rootJ, "colorQuantity", colorQuantity.toJson());
     json_object_set_new(rootJ, "discoSpeedQuantity", discoSpeedQuantity.toJson());
     json_object_set_new(rootJ, "tagManager", tagManager.toJson());
+
+    json_t* extraSourcesJ = json_array();
+    for (auto& extraSource : extraPrefabSources) {
+        json_t* extraSourceJ = json_pack("[s, s]", std::get<0>(extraSource).c_str(), std::get<1>(extraSource).c_str());
+        json_array_append_new(extraSourcesJ, extraSourceJ);
+    }
+    json_object_set_new(rootJ, "extraPrefabSources", extraSourcesJ);
+
+    json_t* extraPatchSourcesJ = json_array();
+    for (auto& extraSource : extraPatchSources) {
+        json_t* extraSourceJ = json_pack("[s, s]", std::get<0>(extraSource).c_str(), std::get<1>(extraSource).c_str());
+        json_array_append_new(extraPatchSourcesJ, extraSourceJ);
+    }
+    json_object_set_new(rootJ, "extraPatchSources", extraPatchSourcesJ);
+
     return rootJ;
 }
 
@@ -77,6 +88,34 @@ void State::fromJson(json_t* rootJ)
     json_t* tagManagerJ = json_object_get(rootJ, "tagManager");
     if (tagManagerJ)
         tagManager.fromJson(tagManagerJ);
+
+    json_t* extraSourcesJ = json_object_get(rootJ, "extraPrefabSources");
+    if (extraSourcesJ) {
+        extraPrefabSources.clear();
+        for (int i = 0; i < json_array_size(extraSourcesJ); i++) {
+            json_t* extraSourceJ = json_array_get(extraSourcesJ, i);
+            extraPrefabSources.insert(std::make_tuple(json_string_value(json_array_get(extraSourceJ, 0)),
+                json_string_value(json_array_get(extraSourceJ, 1))));
+        }
+    }
+
+    json_t* extraPatchSourcesJ = json_object_get(rootJ, "extraPatchSources");
+    if (extraPatchSourcesJ) {
+        extraPatchSources.clear();
+        for (int i = 0; i < json_array_size(extraPatchSourcesJ); i++) {
+            json_t* extraSourceJ = json_array_get(extraPatchSourcesJ, i);
+            auto slug = json_string_value(json_array_get(extraSourceJ, 0));
+            auto root = json_string_value(json_array_get(extraSourceJ, 1));
+            auto pair = std::make_tuple(slug, root);
+            extraPatchSources.insert(pair);
+        }
+    }
+}
+
+void State::refresh()
+{
+    prefabs.refresh();
+    patches.refresh();
 }
 
 void State::save()
@@ -121,6 +160,22 @@ void State::load()
     fromJson(rootJ);
     fclose(file);
     json_decref(rootJ);
+
+    for (auto extraSource : extraPrefabSources) {
+        auto slug = std::get<0>(extraSource);
+        auto root = std::get<1>(extraSource);
+        auto prefabSource = new PrefabSource(slug, root);
+        prefabSource->refresh();
+        prefabs.addSource(*prefabSource);
+    }
+
+    for (auto extraSource : extraPatchSources) {
+        auto slug = std::get<0>(extraSource);
+        auto root = std::get<1>(extraSource);
+        auto patchSource = new PatchSource(slug, root);
+        patchSource->refresh();
+        patches.addSource(*patchSource);
+    }
 
     DINFO("[Prefabs] Loaded Settings from %s", path.c_str());
 }

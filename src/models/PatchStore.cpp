@@ -7,10 +7,10 @@ using namespace rack;
 PatchStore::PatchStore()
 {
     sources = std::map<std::string, PatchSource>();
-    sources.emplace("local", PatchSource());
+    sources.emplace("local", PatchSource("local", asset::user("patches")));
 
     for (auto plugin : plugin::plugins) {
-        addSource(PatchSource(plugin));
+        addSource(PatchSource(plugin->slug, asset::plugin(plugin, "res/patches")));
     }
 }
 
@@ -24,7 +24,7 @@ void PatchStore::refresh()
 
 void PatchStore::addSource(PatchSource source)
 {
-    sources.emplace(source.plugin->slug, source);
+    sources.emplace(source.slug, source);
 }
 
 int PatchStore::total()

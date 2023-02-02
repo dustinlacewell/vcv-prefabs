@@ -7,10 +7,10 @@ using namespace rack;
 PrefabStore::PrefabStore()
 {
     sources = std::map<std::string, PrefabSource>();
-    sources.emplace("local", PrefabSource(nullptr));
+    sources.emplace("local", PrefabSource("local", asset::user("selections")));
 
     for (auto plugin : plugin::plugins) {
-        addSource(PrefabSource(plugin));
+        addSource(PrefabSource(plugin->slug, asset::plugin(plugin, "res/selections")));
     }
 }
 
@@ -24,7 +24,7 @@ void PrefabStore::refresh()
 
 void PrefabStore::addSource(PrefabSource source)
 {
-    sources.emplace(source.plugin->slug, source);
+    sources.emplace(source.slug, source);
 }
 
 int PrefabStore::total()

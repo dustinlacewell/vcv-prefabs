@@ -8,33 +8,25 @@ using namespace rack;
 
 PrefabSource::PrefabSource()
 {
-    plugin = nullptr;
+    slug = "";
+    root = "";
     prefabs = set<Prefab>();
     tags = std::map<std::string, std::set<Prefab>>();
     plugins = std::map<std::string, std::map<std::string, std::set<Prefab>>>();
 }
 
-PrefabSource::PrefabSource(Plugin* plugin)
+PrefabSource::PrefabSource(std::string slug, std::string root)
 {
-    this->plugin = plugin;
+    this->slug = slug;
+    this->root = root;
     prefabs = set<Prefab>();
     tags = std::map<std::string, std::set<Prefab>>();
     plugins = std::map<std::string, std::map<std::string, std::set<Prefab>>>();
-}
-
-std::string PrefabSource::rootPath()
-{
-    auto path = asset::user("selections");
-    if (plugin) {
-        path = asset::plugin(plugin, "res/selections");
-    }
-    return path;
 }
 
 std::string PrefabSource::pathForTag(std::string tagName)
 {
-    return rootPath() + (tagName.empty() ? "" : ('/' + tagName));
-    //        return rootPath() + '/' + tagName;
+    return root + (tagName.empty() ? "" : ('/' + tagName));
 }
 
 std::string PrefabSource::pathForPrefab(std::string tagName, std::string prefabName)
@@ -97,7 +89,7 @@ bool PrefabSource::loadPrefab(std::string tagName, std::string prefabName)
     prefab.addTag(tagName == "" ? "untagged" : tagName);
     prefab.fromJson(rootJ);
 
-    prefab.source = plugin ? plugin->slug : "local";
+    prefab.source = slug;
 
     json_decref(rootJ);
 
@@ -137,9 +129,9 @@ void PrefabSource::refresh()
 
     nPrefabs += this->crawlTag("");  // untagged prefabs
 
-    eachDir(rootPath(), [&nPrefabs, this](auto ent) {
+    eachDir(root, [&nPrefabs, this](auto ent) {
         // check if ent is a directory
-        if (!isDirectory(rootPath() + '/' + ent->d_name)) {
+        if (!isDirectory(root + '/' + ent->d_name)) {
             return;
         }
         nPrefabs += this->crawlTag(ent->d_name);

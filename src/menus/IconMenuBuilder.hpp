@@ -6,6 +6,7 @@
 
 #include "ModularMenuItem.hpp"
 #include "ModularMenuLabel.hpp"
+#include "ModularMenuSeparator.hpp"
 #include "menus/modules/LibraryPluginItem.hpp"
 #include "menus/modules/LibraryPluginMenu.hpp"
 #include "menus/modules/LibraryResultItem.hpp"
@@ -32,7 +33,12 @@ struct IconMenuBuilder
 
     IconMenuBuilder(State* state) : state(state) { modules = ModuleIndex(state); }
 
-    void createSeparator() const { menu->addChild(new MenuSeparator()); }
+    ModularMenuSeparator* createSeparator() const
+    {
+        auto w = new ModularMenuSeparator();
+        menu->addChild(w);
+        return w;
+    }
 
     template <typename T>
     T* makeDefault(T* item) const
@@ -47,50 +53,23 @@ struct IconMenuBuilder
     PrefabSource& getLocalPrefabSource() const { return state->prefabs.getLocalSource(); }
     PrefabSource& getLocalPatchSource() const { return state->patches.getLocalSource(); }
 
-    void createLocalPatchesLabel() const
+    /**
+     * Search
+     */
+
+    void createSearchBox()
     {
-        auto title = new ModularMenuLabel();
-        title->text = "Local patches:";
-        makeDefault(title);
-    }
+        searchBox = new SearchBox([this](std::string text) {
+            modules.results.clear();
 
-    void createLocalPatchTags() const
-    {
-        auto& localSource = state->patches.getLocalSource();
-        for (auto& [tagName, tagPatches] : localSource.tags) {
-            if (tagName == "untagged")
-                continue;
-            makeDefault(new TagItem(state, tagName, tagPatches));
-        }
+            if (text == "") {
+                return;
+            }
 
-        // add "untagged" tag
-        auto untagged = localSource.tags.find("untagged");
-        if (untagged != localSource.tags.end()) {
-            makeDefault(new TagItem(state, "untagged", untagged->second));
-        }
-    }
-
-    void createLocalPrefabsLabel() const
-    {
-        auto title = new ModularMenuLabel();
-        title->text = "Local prefabs:";
-        makeDefault(title);
-    }
-
-    void createLocalPrefabTags() const
-    {
-        auto& localSource = state->prefabs.getLocalSource();
-        for (auto& [tagName, tagPrefabs] : localSource.tags) {
-            if (tagName == "untagged")
-                continue;
-            makeDefault(new TagItem(state, tagName, tagPrefabs));
-        }
-
-        // add "untagged" tag
-        auto untagged = localSource.tags.find("untagged");
-        if (untagged != localSource.tags.end()) {
-            makeDefault(new TagItem(state, "untagged", untagged->second));
-        }
+            modules.search(text);
+        });
+        searchBox->setExtents(Vec(250, BND_WIDGET_HEIGHT));
+        menu->addChild(searchBox);
     }
 
     void createPrefabResults() const
@@ -112,81 +91,6 @@ struct IconMenuBuilder
                 return nonEmpty && found;
             };
             menu->addChild(item);
-        }
-    }
-
-    void createLocalPrefabTagsByModule() const
-    {
-        auto& localSource = state->prefabs.getLocalSource();
-        auto pluginsItem = makeDefault(new ModularMenuItem());
-        pluginsItem->text = "by state:";
-        pluginsItem->childMenuCallback = [this, plugins = localSource.plugins](ModularMenuItem* item, Menu* menu) {
-            for (auto [pluginName, pluginModules] : plugins) {
-                auto pluginItem = new PluginItem(state, pluginName, pluginModules);
-                menu->addChild(pluginItem);
-            }
-        };
-    }
-
-    auto createPluginPrefabsLabel()
-    {
-        auto title = makeDefault(new ModularMenuLabel());
-        title->text = "Plugin prefabs:";
-        return title;
-    }
-
-    auto createSourceMenu(const PrefabSource& source) const
-    {
-        std::vector<Widget*> widgets = {};
-
-        for (auto& [tagName, tagPrefabs] : source.tags) {
-            if (tagName == "untagged")
-                continue;
-            auto tag = new TagItem(state, tagName, tagPrefabs);
-            widgets.push_back(tag);
-        }
-
-        // get untagged
-        auto untagged = source.tags.find("untagged");
-        if (untagged != source.tags.end()) {
-            auto tag = new TagItem(state, "untagged", untagged->second);
-            widgets.push_back(tag);
-        }
-
-        auto pluginsItem = new ModularMenuItem();
-        pluginsItem->text = "by state:";
-        pluginsItem->childMenuCallback = [this, plugins = source.plugins](ModularMenuItem* item, Menu* subMenu) {
-            for (auto [pluginName, pluginModules] : plugins) {
-                auto pluginItem = new PluginItem(this->state, pluginName, pluginModules);
-                subMenu->addChild(pluginItem);
-            }
-        };
-        widgets.push_back(pluginsItem);
-
-        return widgets;
-    }
-
-    void createPluginPrefabResults()
-    {
-        for (const auto& source : state->prefabs.sources) {
-            const auto& sourceName = source.first;
-            const auto& sourcePrefabs = source.second;
-
-            if (sourceName == "local") {
-                continue;
-            }
-
-            if (sourcePrefabs.total == 0)
-                continue;
-
-            auto item = makeDefault(new ModularMenuItem());
-            item->text = sourceName;
-            item->childMenuCallback = [this, sourcePrefabs](ModularMenuItem* item, Menu* subMenu) {
-                auto widgets = createSourceMenu(sourcePrefabs);
-                for (auto widget : widgets) {
-                    subMenu->addChild(widget);
-                }
-            };
         }
     }
 
@@ -212,6 +116,281 @@ struct IconMenuBuilder
         menu->addChild(moreItem);
     }
 
+    /**
+     * Prefabs
+     */
+
+    // local prefabs
+
+    void createLocalPrefabsLabel() const
+    {
+        auto title = new ModularMenuLabel();
+        title->text = "Local prefabs:";
+        makeDefault(title);
+    }
+
+    void createLocalPrefabUntagged() const
+    {
+        auto& localSource = state->prefabs.getLocalSource();
+
+        auto untagged = localSource.tags.find("untagged");
+        if (untagged != localSource.tags.end()) {
+            makeDefault(new TagItem(state, "untagged", untagged->second));
+        }
+    }
+
+    void createLocalPrefabTags() const
+    {
+        auto& localSource = state->prefabs.getLocalSource();
+        for (auto& [tagName, tagPrefabs] : localSource.tags) {
+            if (tagName == "untagged")
+                continue;
+            makeDefault(new TagItem(state, tagName, tagPrefabs));
+        }
+
+        createLocalPrefabUntagged();
+    }
+
+    void createLocalPrefabTagsByModule() const
+    {
+        auto& localSource = state->prefabs.getLocalSource();
+        auto pluginsItem = makeDefault(new ModularMenuItem());
+        pluginsItem->text = "by module:";
+        pluginsItem->childMenuCallback = [this, plugins = localSource.plugins](ModularMenuItem* item, Menu* menu) {
+            for (auto [pluginName, pluginModules] : plugins) {
+                auto pluginItem = new PluginItem(state, pluginName, pluginModules);
+                menu->addChild(pluginItem);
+            }
+        };
+    }
+
+    void createLocalPrefabs() const
+    {
+        createLocalPrefabsLabel();
+        createLocalPrefabTags();
+        createLocalPrefabTagsByModule();
+    }
+
+    // plugin prefabs
+
+    auto createPluginPrefabsLabel() const
+    {
+        auto title = makeDefault(new ModularMenuLabel());
+        title->text = "Plugin prefabs:";
+        return title;
+    }
+
+    auto createPrefabSourceMenu(const PrefabSource& source) const
+    {
+        std::vector<Widget*> widgets = {};
+
+        // tagged
+        for (auto& [tagName, tagPrefabs] : source.tags) {
+            if (tagName == "untagged")
+                continue;
+            auto tag = new TagItem(state, tagName, tagPrefabs);
+            widgets.push_back(tag);
+        }
+
+        // untagged
+        auto untagged = source.tags.find("untagged");
+        if (untagged != source.tags.end()) {
+            auto tag = new TagItem(state, "untagged", untagged->second);
+            widgets.push_back(tag);
+        }
+
+        // by module
+        auto pluginsItem = new ModularMenuItem();
+        pluginsItem->text = "by module:";
+        pluginsItem->childMenuCallback = [this, plugins = source.plugins](ModularMenuItem* item, Menu* subMenu) {
+            for (auto [pluginName, pluginModules] : plugins) {
+                auto pluginItem = new PluginItem(this->state, pluginName, pluginModules);
+                subMenu->addChild(pluginItem);
+            }
+        };
+        widgets.push_back(pluginsItem);
+
+        return widgets;
+    }
+
+    void createPluginPrefabItems() const
+    {
+        for (const auto& source : state->prefabs.sources) {
+            const auto& sourceName = source.first;
+            const auto& sourcePrefabs = source.second;
+
+            if (sourceName == "local") {
+                continue;
+            }
+
+            if (sourcePrefabs.total == 0)
+                continue;
+
+            auto item = makeDefault(new ModularMenuItem());
+            item->text = sourceName;
+            item->childMenuCallback = [this, sourcePrefabs](ModularMenuItem* item, Menu* subMenu) {
+                auto widgets = createPrefabSourceMenu(sourcePrefabs);
+                for (auto widget : widgets) {
+                    subMenu->addChild(widget);
+                }
+            };
+        }
+    }
+
+    void createPluginPrefabs() const
+    {
+        createPluginPrefabsLabel();
+        createPluginPrefabItems();
+    }
+
+    void createPrefabs() const
+    {
+        createLocalPrefabs();
+        createPluginPrefabs();
+        createPrefabResults();
+    }
+
+    /**
+     * Patches
+     */
+
+    // local patches
+
+    void createLocalPatchesLabel() const
+    {
+        auto title = new ModularMenuLabel();
+        title->text = "Local patches:";
+        makeDefault(title);
+    }
+
+    void createLocalPatchUntagged() const
+    {
+        auto& localSource = state->patches.getLocalSource();
+
+        auto untagged = localSource.tags.find("untagged");
+        if (untagged != localSource.tags.end()) {
+            makeDefault(new TagItem(state, "untagged", untagged->second));
+        }
+    }
+
+    void createLocalPatchTags() const
+    {
+        auto& localSource = state->patches.getLocalSource();
+        for (auto& [tagName, tagPatches] : localSource.tags) {
+            if (tagName == "untagged")
+                continue;
+            makeDefault(new TagItem(state, tagName, tagPatches));
+        }
+
+        createLocalPatchUntagged();
+    }
+
+    void createLocalPatches() const
+    {
+        createLocalPatchesLabel();
+        createLocalPatchTags();
+    }
+
+    // plugin patches
+
+    auto createPluginPatchLabel() const
+    {
+        auto title = makeDefault(new ModularMenuLabel());
+        title->text = "Plugin patches:";
+        return title;
+    }
+
+    auto createPatchSourceMenu(const PatchSource& source) const
+    {
+        if (source.total == 0) {
+            return std::vector<Widget*>{};
+        }
+
+        std::vector<Widget*> widgets = {};
+
+        // tagged
+        for (auto& [tagName, tagPatches] : source.tags) {
+            if (tagName == "untagged")
+                continue;
+            auto tag = new TagItem(state, tagName, tagPatches);
+            widgets.push_back(tag);
+        }
+
+        // untagged
+        auto untagged = source.tags.find("untagged");
+        if (untagged != source.tags.end()) {
+            auto tag = new TagItem(state, "untagged", untagged->second);
+            widgets.push_back(tag);
+        }
+
+        // by module
+        auto pluginsItem = new ModularMenuItem();
+        pluginsItem->text = "by module:";
+        pluginsItem->childMenuCallback = [this, plugins = source.plugins](ModularMenuItem* item, Menu* subMenu) {
+            for (auto [pluginName, pluginModules] : plugins) {
+                auto pluginItem = new PluginItem(this->state, pluginName, pluginModules);
+                subMenu->addChild(pluginItem);
+            }
+        };
+        widgets.push_back(pluginsItem);
+
+        return widgets;
+    }
+
+    void createPluginPatchItems() const
+    {
+        for (const auto& source : state->patches.sources) {
+            const auto& sourceName = source.first;
+            const auto& sourcePrefabs = source.second;
+
+            if (sourceName == "local") {
+                continue;
+            }
+
+            if (sourcePrefabs.total == 0)
+                continue;
+
+            auto item = makeDefault(new ModularMenuItem());
+            item->text = sourceName;
+            item->childMenuCallback = [this, sourcePrefabs](ModularMenuItem* item, Menu* subMenu) {
+                auto widgets = createPrefabSourceMenu(sourcePrefabs);
+                for (auto widget : widgets) {
+                    subMenu->addChild(widget);
+                }
+            };
+        }
+    }
+
+    void createPluginPatches() const
+    {
+        createPluginPatchLabel();
+        auto sources = state->patches.sources;
+        auto total = 0;
+        for (auto& [name, source] : sources) {
+            if (name == "local")
+                continue;
+            total += source.total;
+        }
+        if (total == 0)
+            return;
+        createPluginPatchItems();
+    }
+
+    void createPatches() const
+    {
+        auto sep = createSeparator();
+        sep->visibleCallback = [this]() {
+            return searchBox->text == "";
+        };
+
+        createLocalPatches();
+        createPluginPatches();
+    }
+
+    /**
+     * Library
+     */
+
     void createModuleIndexMenu()
     {
         bool favoritesOnly = !modPressed(RACK_MOD_CTRL);
@@ -234,38 +413,6 @@ struct IconMenuBuilder
         menu->addChild(tagIndexMenu);
     }
 
-    void createSearchBox()
-    {
-        searchBox = new SearchBox([this](std::string text) {
-            this->modules.results.clear();
-
-            if (text == "") {
-                return;
-            }
-
-            this->modules.search(text);
-        });
-        searchBox->setExtents(Vec(250, BND_WIDGET_HEIGHT));
-        menu->addChild(searchBox);
-    }
-
-    void createLocalPatches() const
-    {
-        createLocalPatchesLabel();
-        createLocalPatchTags();
-    }
-
-    void createLocalPrefabs() const
-    {
-        createLocalPrefabsLabel();
-        createLocalPrefabTags();
-        createLocalPrefabTagsByModule();
-    }
-    void createPluginPrefabs()
-    {
-        createPluginPrefabsLabel();
-        createPluginPrefabResults();
-    }
     void createModuleResults()
     {
         auto label = new ModularMenuLabel();
@@ -281,8 +428,10 @@ struct IconMenuBuilder
 
     void createLibrary()
     {
+        createSeparator();
         createModuleIndexMenu();
         createModuleTagIndexMenu();
+        createModuleResults();
 
         if (!modPressed(RACK_MOD_CTRL)) {
             auto tip = new ModularMenuLabel();
@@ -294,19 +443,15 @@ struct IconMenuBuilder
         }
     }
 
+    // main build method
     void build()
     {
         menu = createMenu();
         modules.results.clear();
 
         createSearchBox();
-        createPrefabResults();
-        createLocalPrefabs();
-        createPluginPrefabs();
-        createSeparator();
-        createLocalPatches();
-        createSeparator();
-        createModuleResults();
+        createPrefabs();
+        createPatches();
         createLibrary();
     }
 };

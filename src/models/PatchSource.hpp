@@ -11,7 +11,6 @@ using namespace rack::plugin;
 struct PatchSource : PrefabSource
 {
     PatchSource();
-    PatchSource(Plugin* plugin);
-    std::string rootPath() override;
+    PatchSource(std::string slug, std::string root);
     json_t* loadFile(std::string path) override;
 };

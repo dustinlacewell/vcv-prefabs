@@ -19,6 +19,7 @@ IconWidget::IconWidget()
 {
     state = new State();
     state->load();
+    state->refresh();
     menuBuilder = new IconMenuBuilder(state);
     disco = DiscoUpdater(state);
     addChild(createSvg());
@@ -64,6 +65,7 @@ void IconWidget::onButton(const event::Button& e)
     e.consume(this);
 
     if (isRightClick(e)) {
+        state->refresh();
         menuBuilder->build();
     }
 }
