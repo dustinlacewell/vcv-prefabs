@@ -88,6 +88,23 @@ void PrefabsWidget::appendContextMenu(Menu* menu)
         return;
     }
 
+    auto everyTime = new ModularMenuItem();
+    everyTime->text = "Refresh every time";
+    everyTime->rightText = CHECKMARK(state->refreshEveryTime);
+    everyTime->visibleCallback = [=]() {
+        everyTime->rightText = CHECKMARK(state->refreshEveryTime);
+        return true;
+    };
+    everyTime->buttonCallback = [=](const event::Button& e) {
+        if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_LEFT) {
+            state->refreshEveryTime = !state->refreshEveryTime;
+        }
+
+        e.consume(everyTime);
+        return false;
+    };
+    menu->addChild(everyTime);
+
     auto searchResults = new rack::ui::Slider();
     searchResults->box.size.x = 220.0f;
     searchResults->quantity = &state->searchResultsQuantity;

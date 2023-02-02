@@ -65,7 +65,9 @@ void IconWidget::onButton(const event::Button& e)
     e.consume(this);
 
     if (isRightClick(e)) {
-        state->refresh();
+        if (state->refreshEveryTime) {
+            state->refresh();
+        }
         menuBuilder->build();
     }
 }

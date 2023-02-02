@@ -7,6 +7,8 @@ using namespace rack::dsp;
 
 State::State()
 {
+    refreshEveryTime = false;
+
     searchResultsQuantity = SimpleQuantity();
     searchResultsQuantity.label = "Number of search results";
     searchResultsQuantity.minValue = 8;
@@ -39,6 +41,7 @@ State::State()
 json_t* State::toJson()
 {
     json_t* rootJ = json_object();
+    json_object_set_new(rootJ, "refreshEveryTime", json_boolean(refreshEveryTime));
     json_object_set_new(rootJ, "showing", json_boolean(showing));
     json_object_set_new(rootJ, "pos", json_pack("[f, f]", pos.x, pos.y));
     json_object_set_new(rootJ, "searchResultsQuantity", searchResultsQuantity.toJson());
@@ -65,6 +68,10 @@ json_t* State::toJson()
 
 void State::fromJson(json_t* rootJ)
 {
+    json_t* refreshJ = json_object_get(rootJ, "refreshEveryTime");
+    if (refreshJ)
+        refreshEveryTime = json_boolean_value(refreshJ);
+
     json_t* showJ = json_object_get(rootJ, "showing");
     if (showJ)
         showing = json_boolean_value(showJ);
@@ -165,7 +172,6 @@ void State::load()
         auto slug = std::get<0>(extraSource);
         auto root = std::get<1>(extraSource);
         auto prefabSource = new PrefabSource(slug, root);
-        prefabSource->refresh();
         prefabs.addSource(*prefabSource);
     }
 
@@ -173,7 +179,6 @@ void State::load()
         auto slug = std::get<0>(extraSource);
         auto root = std::get<1>(extraSource);
         auto patchSource = new PatchSource(slug, root);
-        patchSource->refresh();
         patches.addSource(*patchSource);
     }
 

@@ -15,6 +15,8 @@ struct State
     bool showing = true;
     Vec pos = Vec(30, 30);
 
+    bool refreshEveryTime;
+
     ModuleTagManager tagManager;
     ModuleSorter moduleSorter;
 

@@ -46,6 +46,9 @@ void Prefabs::process(const ProcessArgs& args)
     lastShowParam = currentShow;
 
     if (buttonClicked) {
+        if (!widget->state->showing) {
+            widget->state->refresh();
+        }
         widget->state->showing = !(widget->state->showing);
     }
 
