@@ -1,5 +1,13 @@
 # Prefabs Changelog
 
+### 2.0.4 - 2/2/2023
+
+- Refreshing is now in a background thread which should keep the UI responsive
+- Added a browser replacement mode
+- Added `extraPrefabSources` and `extraPatchSources` to `prefab.json` settings.
+- Patches are now searched
+- Search results cleaned up
+
 ## 2.0.3 - 2/1/2023
 
 - Multiple Prefab module are no longer a problem, they all share the single global widget.
