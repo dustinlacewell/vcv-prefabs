@@ -3,20 +3,34 @@
 
 FakeBrowser::FakeBrowser()
 {
-    browserBackup = APP->scene->browser;
-    browserBackup->hide();
-    APP->scene->removeChild(browserBackup);
-
-    APP->scene->browser = this;
-    APP->scene->addChild(this);
+    enable();
 }
 
 FakeBrowser::~FakeBrowser()
 {
+    disable();
+    Widget::~Widget();
+}
+
+void FakeBrowser::enable()
+{
+    if (APP->scene->browser != this) {
+        browserBackup = APP->scene->browser;
+        browserBackup->hide();
+
+        APP->scene->browser = this;
+        APP->scene->addChild(this);
+        hide();
+    }
+}
+
+// factor out the disable steps above to a static function here
+// and call it from the destructor and the destructor of IconWidget
+// to avoid code duplication
+void FakeBrowser::disable()
+{
     if (APP->scene->browser == this) {
         APP->scene->browser = browserBackup;
-        APP->scene->addChild(browserBackup);
-        APP->scene->removeChild(this);
     }
 }
 

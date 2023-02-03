@@ -14,4 +14,6 @@ struct FakeBrowser : OpaqueWidget
 
     void step() override;
     void onButton(const event::Button& e) override;
+    void disable();
+    void enable();
 };

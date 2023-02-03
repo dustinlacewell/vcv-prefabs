@@ -26,8 +26,7 @@ void Prefabs::enableBrowserMode()
     if (widget && widget->state->browserMode) {
         auto browser = dynamic_cast<FakeBrowser*>(APP->scene->browser);
         if (!browser) {
-            browser = new FakeBrowser();
-            browser->hide();
+            new FakeBrowser();
         }
     }
 }
@@ -37,7 +36,7 @@ void Prefabs::disableBrowserMode()
     if (widget && !widget->state->browserMode) {
         auto browser = dynamic_cast<FakeBrowser*>(APP->scene->browser);
         if (browser) {
-            delete browser;
+            browser->disable();
         }
     }
 }
