@@ -7,7 +7,6 @@ using namespace rack::dsp;
 
 State::State()
 {
-    refreshEveryTime = false;
     browserMode = false;
 
     searchResultsQuantity = SimpleQuantity();
@@ -34,15 +33,13 @@ State::State()
     discoSpeedQuantity.value = 0.0;
     discoSpeedQuantity.rounded = false;
 
-    prefabs = PrefabStore();
-    patches = PatchStore();
+    store = Store();
     tagManager = ModuleTagManager();
 }
 
 json_t* State::toJson()
 {
     json_t* rootJ = json_object();
-    json_object_set_new(rootJ, "refreshEveryTime", json_boolean(refreshEveryTime));
     json_object_set_new(rootJ, "browserMode", json_boolean(browserMode));
     json_object_set_new(rootJ, "showing", json_boolean(showing));
     json_object_set_new(rootJ, "pos", json_pack("[f, f]", pos.x, pos.y));
@@ -70,10 +67,6 @@ json_t* State::toJson()
 
 void State::fromJson(json_t* rootJ)
 {
-    json_t* refreshJ = json_object_get(rootJ, "refreshEveryTime");
-    if (refreshJ)
-        refreshEveryTime = json_boolean_value(refreshJ);
-
     json_t* browserJ = json_object_get(rootJ, "browserMode");
     if (browserJ)
         browserMode = json_boolean_value(browserJ);
@@ -127,8 +120,7 @@ void State::fromJson(json_t* rootJ)
 
 void State::refresh()
 {
-    prefabs.refresh();
-    patches.refresh();
+    store.refresh();
 }
 
 void State::save()
@@ -178,14 +170,14 @@ void State::load()
         auto slug = std::get<0>(extraSource);
         auto root = std::get<1>(extraSource);
         auto prefabSource = new PrefabSource(slug, root);
-        prefabs.addSource(*prefabSource);
+        store.prefabs.addSource(*prefabSource);
     }
 
     for (auto extraSource : extraPatchSources) {
         auto slug = std::get<0>(extraSource);
         auto root = std::get<1>(extraSource);
         auto patchSource = new PatchSource(slug, root);
-        patches.addSource(*patchSource);
+        store.patches.addSource(*patchSource);
     }
 
     DINFO("[Prefabs] Loaded Settings from %s", path.c_str());

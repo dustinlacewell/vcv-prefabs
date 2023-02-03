@@ -16,9 +16,11 @@ PrefabStore::PrefabStore()
 
 void PrefabStore::refresh()
 {
+    total = 0;
     for (auto& [slug, source] : sources) {
         source.refresh();
         sources.emplace(slug, source);
+        total += source.total;
     }
 }
 
@@ -27,12 +29,8 @@ void PrefabStore::addSource(PrefabSource source)
     sources.emplace(source.slug, source);
 }
 
-int PrefabStore::total()
+int PrefabStore::getTotal()
 {
-    int total = 0;
-    for (auto& [slug, source] : sources) {
-        total += source.total;
-    }
     return total;
 }
 

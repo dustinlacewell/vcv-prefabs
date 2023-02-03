@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rack.hpp>
+#include "Store.hpp"
 #include "models/ModuleSorter.hpp"
 #include "models/ModuleTagManager.hpp"
 #include "models/PatchStore.hpp"
@@ -15,14 +16,12 @@ struct State
     bool showing = true;
     Vec pos = Vec(30, 30);
 
-    bool refreshEveryTime;
     bool browserMode;
 
     ModuleTagManager tagManager;
     ModuleSorter moduleSorter;
 
-    PrefabStore prefabs;
-    PatchStore patches;
+    Store store;
 
     SimpleQuantity searchResultsQuantity;
     SimpleQuantity colorQuantity;

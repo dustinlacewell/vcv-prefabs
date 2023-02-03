@@ -47,10 +47,10 @@ void PrefabsWidget::step()
 
     auto state = prefabsModule->widget->state;
 
-    auto total = min(999, state->prefabs.total());
+    auto total = min(999, state->store.prefabs.getTotal());
 
     if (total != lastCount) {
-        auto totalStr = std::to_string(state->prefabs.total());
+        auto totalStr = std::to_string(total);
         while (totalStr.length() < 3) {
             totalStr = "0" + totalStr;
         }
@@ -87,23 +87,6 @@ void PrefabsWidget::appendContextMenu(Menu* menu)
     if (state == nullptr) {
         return;
     }
-
-    auto everyTime = new ModularMenuItem();
-    everyTime->text = "Refresh every time";
-    everyTime->rightText = CHECKMARK(state->refreshEveryTime);
-    everyTime->visibleCallback = [=]() {
-        everyTime->rightText = CHECKMARK(state->refreshEveryTime);
-        return true;
-    };
-    everyTime->buttonCallback = [=](const event::Button& e) {
-        if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_LEFT) {
-            state->refreshEveryTime = !state->refreshEveryTime;
-        }
-
-        e.consume(everyTime);
-        return false;
-    };
-    menu->addChild(everyTime);
 
     auto browserMode = new ModularMenuItem();
     browserMode->text = "Replace browser";
