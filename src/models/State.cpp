@@ -120,7 +120,7 @@ void State::fromJson(json_t* rootJ)
 void State::refresh()
 {
     //    store.refresh();
-    threadedStore.refresh();
+    store.refresh();
 }
 
 void State::save()
@@ -170,14 +170,14 @@ void State::load()
         auto slug = std::get<0>(extraSource);
         auto root = std::get<1>(extraSource);
         auto prefabSource = FileSource(slug, root);
-        threadedStore.prefabSources.push_back(prefabSource);
+        store.prefabSources.push_back(prefabSource);
     }
 
     for (auto extraSource : extraPatchSources) {
         auto slug = std::get<0>(extraSource);
         auto root = std::get<1>(extraSource);
         auto patchSource = ArchiveSource(slug, root);
-        threadedStore.patchSources.push_back(patchSource);
+        store.patchSources.push_back(patchSource);
     }
 
     DINFO("[Prefabs] Loaded Settings from %s", path.c_str());

@@ -20,7 +20,7 @@ struct State
     ModuleTagManager tagManager;
     ModuleSorter moduleSorter;
 
-    ThreadedStore threadedStore;
+    ThreadedStore store;
 
     Index prefabsIndex;
     Index patchesIndex;

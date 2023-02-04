@@ -1,7 +1,6 @@
 #pragma once
 
 #include <rack.hpp>
-#include "SourceIndex.hpp"
 #include "sources/Rack.h"
 
 using namespace rack;
@@ -10,11 +9,11 @@ typedef std::set<Rack> RackSet;
 typedef std::map<std::string, RackSet> RackGroups;
 typedef std::map<std::string, RackGroups> PluginRacks;
 
-struct Index
+struct SourceIndex
 {
     RackSet racks;
-
-    std::map<std::string, SourceIndex> sources;
+    RackGroups groups;
+    PluginRacks plugins;
 
     void addRack(Rack rack);
 };
