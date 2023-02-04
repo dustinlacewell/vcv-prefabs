@@ -6,6 +6,7 @@
 #include "utils/logging.hpp"
 #include "widgets/FakeBrowser.hpp"
 #include "widgets/PrefabsWidget.hpp"
+#include "widgets/SnowWidget.hpp"
 
 using namespace rack::dsp;
 
@@ -14,7 +15,7 @@ bool locked = false;
 Prefabs::Prefabs()
 {
     config(PARAMS_LEN, INPUTS_LEN, OUTPUTS_LEN, LIGHTS_LEN);
-    configLight(STATUS_LIGHT, "Status light");
+    configLight(WIDGET_LIGHT, "Status light");
 
     widget = nullptr;
     float currentShow = params[SHOW_PARAM].getValue();
@@ -75,7 +76,8 @@ void Prefabs::process(const ProcessArgs& args)
         widget->state->showing = !(widget->state->showing);
     }
 
-    lights[STATUS_LIGHT].setBrightness(widget->state->showing ? 1.0 : 0.0);
+    lights[WIDGET_LIGHT].setBrightness(widget->state->showing ? 1.0 : 0.0);
+    lights[REFRESH_LIGHT].setBrightness(refreshing ? 1.0 : 0.0);
 }
 
 IconWidget* Prefabs::findWidget()

@@ -2,12 +2,14 @@
 
 #include <rack.hpp>
 #include "Store.hpp"
+#include "index/Index.hpp"
 #include "models/ModuleSorter.hpp"
 #include "models/ModuleTagManager.hpp"
 #include "models/PatchStore.hpp"
 #include "models/Prefab.hpp"
 #include "models/PrefabStore.hpp"
 #include "models/SimpleQuantity.hpp"
+#include "sources/ThreadedStore.hpp"
 
 using namespace rack;
 
@@ -22,6 +24,10 @@ struct State
     ModuleSorter moduleSorter;
 
     Store store;
+    ThreadedStore threadedStore;
+
+    Index prefabsIndex;
+    Index patchesIndex;
 
     SimpleQuantity searchResultsQuantity;
     SimpleQuantity colorQuantity;

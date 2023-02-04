@@ -28,7 +28,8 @@ struct Prefabs : rack::Module
     };
     enum LightId
     {
-        STATUS_LIGHT,
+        WIDGET_LIGHT,
+        REFRESH_LIGHT,
         LIGHTS_LEN
     };
 

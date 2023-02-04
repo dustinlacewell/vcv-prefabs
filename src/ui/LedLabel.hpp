@@ -1,10 +1,11 @@
 #pragma once
 
 #include <rack.hpp>
+#include "ModularWidget.hpp"
 
 using namespace rack;
 
-struct LedLabel : Widget
+struct LedLabel : ModularWidget
 {
     int fontSize = 12;
     std::string text;

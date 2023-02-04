@@ -26,7 +26,7 @@ State::State()
     colorQuantity.rounded = false;
 
     discoSpeedQuantity = SimpleQuantity();
-    discoSpeedQuantity.label = "Disco speed";
+    discoSpeedQuantity.label = "Disco maxSpeed";
     discoSpeedQuantity.minValue = 0.0f;
     discoSpeedQuantity.maxValue = 0.03f;
     discoSpeedQuantity.defaultValue = 0.0;
@@ -120,7 +120,8 @@ void State::fromJson(json_t* rootJ)
 
 void State::refresh()
 {
-    store.refresh();
+    //    store.refresh();
+    threadedStore.refresh();
 }
 
 void State::save()

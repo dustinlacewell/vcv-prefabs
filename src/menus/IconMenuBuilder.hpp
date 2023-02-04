@@ -521,9 +521,9 @@ struct IconMenuBuilder
         menu = createMenu();
 
         if (state->store.locked) {
-            // create a menu notifying the user that the store is refreshing
+            // create a menu notifying the user that the sources is refreshing
             auto label = new ModularMenuLabel();
-            label->text = "Refreshing store...";
+            label->text = "Refreshing sources...";
             menu->addChild(label);
             return;
         }

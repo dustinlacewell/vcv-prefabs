@@ -6,7 +6,9 @@
 
 struct PrefabsWidget : ModuleWidget
 {
-    LedLabel* totalLabel;
+    LedLabel* prefabsLabel;
+    LedLabel* patchesLabel;
+    LedLabel* modulesLabel;
 
     int lastCount = 0;
 

@@ -44,6 +44,28 @@ void IconWidget::step()
 
     if (visible) {
         disco.process();
+
+        // non-blocking attempt to acquire prefabsMutex
+        if (prefabsMutex.try_lock()) {
+            // if we have prefabs, add them to the menu
+            while (!prefabsQueue.empty()) {
+                auto rack = prefabsQueue.front();
+                prefabsQueue.pop();
+                state->prefabsIndex.addRack(rack);
+            }
+            prefabsMutex.unlock();
+        }
+
+        // non-blocking attempt to acquire patchesMutex
+        if (patchesMutex.try_lock()) {
+            // if we have patches, add them to the menu
+            while (!patchesQueue.empty()) {
+                auto rack = patchesQueue.front();
+                patchesQueue.pop();
+                state->patchesIndex.addRack(rack);
+            }
+            patchesMutex.unlock();
+        }
     }
 
     OpaqueWidget::step();
