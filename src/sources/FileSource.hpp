@@ -7,17 +7,32 @@ using namespace rack::plugin;
 
 #include "Rack.h"
 #include "Source.hpp"
+#include "efsw/efsw.h"
+#include "efsw/efsw.hpp"
+
+class UpdateListener : public efsw::FileWatchListener
+{
+   public:
+    std::function<void(std::string, std::string)> callback;
+
+    void handleFileAction(efsw::WatchID watchid,
+        const std::string& dir,
+        const std::string& filename,
+        efsw::Action action,
+        std::string oldFilename) override;
+};
 
 struct FileSource : Source
 {
+    int readRack(std::string tagName, std::string prefabName);
+
    private:
-    int total = 0;
+    efsw_watcher watcher;
 
     std::string slug;
     std::string path;
 
     std::map<std::string, Rack> racks;
-    std::function<void(Rack)> callback;
 
     std::string pathForTag(std::string tagName);
     std::string pathForItem(std::string tagName, std::string prefabName);
@@ -27,6 +42,8 @@ struct FileSource : Source
     Rack* read(std::string tagName, std::string prefabName);
 
    public:
+    std::function<void(Rack)> callback;
+
     FileSource(std::string slug, std::string path);
     virtual ~FileSource();
     virtual json_t* readJson(std::string filePath);

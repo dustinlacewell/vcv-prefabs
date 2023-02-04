@@ -21,12 +21,13 @@ extern int refreshing;
 
 struct ThreadedStore
 {
-    std::vector<FileSource> prefabSources;
-    std::vector<ArchiveSource> patchSources;
+    std::vector<FileSource*> prefabSources;
+    std::vector<ArchiveSource*> patchSources;
 
     int getTotalPrefabs();
     int getTotalPatches();
 
     ThreadedStore();
+    ~ThreadedStore();
     void refresh();
 };

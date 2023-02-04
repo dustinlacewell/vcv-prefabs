@@ -17,7 +17,6 @@ struct Latch : ModularWidget
     std::vector<std::shared_ptr<window::Svg>> frames;
 
     Latch();
-    ~Latch();
 
     void addFrame(std::shared_ptr<window::Svg> svg);
     virtual void step() override;

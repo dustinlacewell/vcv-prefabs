@@ -12,11 +12,9 @@ Latch::Latch()
     sw = new widget::SvgWidget;
     fb->addChild(sw);
 
-    addFrame(Svg::load(asset::system("res/ComponentLibrary/VCVButton_0.svg")));
-    addFrame(Svg::load(asset::system("res/ComponentLibrary/VCVButton_1.svg")));
+    //    addFrame(Svg::load(asset::system("res/ComponentLibrary/VCVButton_0.svg")));
+    //    addFrame(Svg::load(asset::system("res/ComponentLibrary/VCVButton_1.svg")));
 }
-
-Latch::~Latch() {}
 
 void Latch::step()
 {

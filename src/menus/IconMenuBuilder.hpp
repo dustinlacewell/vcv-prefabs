@@ -435,9 +435,9 @@ struct IconMenuBuilder
         auto sources = state->store.patchSources;
         auto total = 0;
         for (auto source : sources) {
-            if (source.getSlug() == "local")
+            if (source->getSlug() == "local")
                 continue;
-            total += source.getTotal();
+            total += source->getTotal();
         }
         if (total == 0)
             return;

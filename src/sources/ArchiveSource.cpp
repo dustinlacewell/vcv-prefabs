@@ -10,6 +10,11 @@ using namespace rack;
 
 ArchiveSource::ArchiveSource(std::string slug, std::string root) : FileSource(slug, root) {}
 
+ArchiveSource::~ArchiveSource()
+{
+    DINFO("ArchiveSource::~ArchiveSource() %s", this->getSlug().c_str());
+}
+
 json_t* ArchiveSource::readJson(std::string path)
 {
     std::string extension = extensionFrom(path);

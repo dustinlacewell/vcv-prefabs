@@ -30,6 +30,7 @@ IconWidget::IconWidget()
 IconWidget::~IconWidget()
 {
     state->save();
+    delete state;
     delete menuBuilder;
 }
 

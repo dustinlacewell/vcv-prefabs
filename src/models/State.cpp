@@ -169,14 +169,14 @@ void State::load()
     for (auto extraSource : extraPrefabSources) {
         auto slug = std::get<0>(extraSource);
         auto root = std::get<1>(extraSource);
-        auto prefabSource = FileSource(slug, root);
+        auto prefabSource = new FileSource(slug, root);
         store.prefabSources.push_back(prefabSource);
     }
 
     for (auto extraSource : extraPatchSources) {
         auto slug = std::get<0>(extraSource);
         auto root = std::get<1>(extraSource);
-        auto patchSource = ArchiveSource(slug, root);
+        auto patchSource = new ArchiveSource(slug, root);
         store.patchSources.push_back(patchSource);
     }
 

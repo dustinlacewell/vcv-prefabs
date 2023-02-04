@@ -7,10 +7,17 @@ project(Prefabs)
 
 set(PLUGIN_NAME ${PROJECT_NAME})
 set(ADDITIONAL_PLUGIN_DISTRIBUTABLES README.md)
-include(RackSDK.cmake)
 
 include_directories(src)
+include_directories(efsw/include)
+include_directories(efsw/src)
+
+include(RackSDK.cmake)
 
 file(GLOB_RECURSE SOURCE_FILES "src/*.cpp")
-target_sources(${RACK_PLUGIN_LIB} PRIVATE ${SOURCE_FILES})
+file(GLOB_RECURSE EFSW_SOURCES "efsw/src/efsw/*.cpp")
+
+target_sources(${RACK_PLUGIN_LIB} PRIVATE ${SOURCE_FILES} ${EFSW_SOURCES})
+
+
 

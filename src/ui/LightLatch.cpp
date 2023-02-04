@@ -10,11 +10,6 @@ LightLatch::LightLatch()
     addChild(light);
 }
 
-LightLatch::~LightLatch()
-{
-    Latch::~Latch();
-}
-
 void LightLatch::step()
 {
     Latch::step();
