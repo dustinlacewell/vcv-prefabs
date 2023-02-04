@@ -27,9 +27,9 @@ PrefabsWidget::PrefabsWidget(Prefabs* module)
     };
 
     // button for toggling the widget / refreshing
-    //    auto toggle = new WidgetToggle(module);
-    //    addChild(toggle);
-    //    centerWidget(toggle, Vec(center.x, box.size.y - 50));
+    auto toggle = new WidgetToggle(module);
+    addChild(toggle);
+    centerWidget(toggle, Vec(center.x, box.size.y - 50));
 
     // add small green light to show that the module is active
     addChild(createLightCentered<SmallLight<YellowLight>>(mm2px(Vec(7.5, 43)), module, Prefabs::REFRESH_LIGHT));
