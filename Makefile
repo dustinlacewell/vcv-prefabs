@@ -33,7 +33,7 @@ $(info cmake_rack_plugin target is '$(cmake_rack_plugin)')
 DEPS += $(cmake_rack_plugin)
 
 $(cmake_rack_plugin): CMakeLists.txt
-	$(CMAKE) -B $(CMAKE_BUILD) -DRACK_SDK_DIR=$(RACK_DIR) -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(CMAKE_BUILD)/dist $(EXTRA_CMAKE)
+	$(CMAKE) -B $(CMAKE_BUILD) -DRACK_SDK_DIR=$(RACK_DIR) -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(CMAKE_BUILD)/dist $(EXTRA_CMAKE) -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15
 	cmake --build $(CMAKE_BUILD) -- -j $(shell getconf _NPROCESSORS_ONLN)
 	cmake --install $(CMAKE_BUILD)
 
