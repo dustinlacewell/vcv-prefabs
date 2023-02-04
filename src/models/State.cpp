@@ -8,6 +8,7 @@ using namespace rack::dsp;
 State::State()
 {
     browserMode = false;
+    monoIcon = false;
 
     searchResultsQuantity = SimpleQuantity();
     searchResultsQuantity.label = "Number of search results";
@@ -43,6 +44,7 @@ json_t* State::toJson()
     json_object_set_new(rootJ, "showing", json_boolean(showing));
     json_object_set_new(rootJ, "pos", json_pack("[f, f]", pos.x, pos.y));
     json_object_set_new(rootJ, "searchResultsQuantity", searchResultsQuantity.toJson());
+    json_object_set_new(rootJ, "monoIcon", json_boolean(monoIcon));
     json_object_set_new(rootJ, "colorQuantity", colorQuantity.toJson());
     json_object_set_new(rootJ, "discoSpeedQuantity", discoSpeedQuantity.toJson());
     json_object_set_new(rootJ, "tagManager", tagManager.toJson());
@@ -81,6 +83,10 @@ void State::fromJson(json_t* rootJ)
     json_t* searchResultsQuantityJ = json_object_get(rootJ, "searchResultsQuantity");
     if (searchResultsQuantityJ)
         searchResultsQuantity.fromJson(searchResultsQuantityJ);
+
+    json_t* monoJ = json_object_get(rootJ, "monoIcon");
+    if (monoJ)
+        monoIcon = json_boolean_value(monoJ);
 
     json_t* colorQuantityJ = json_object_get(rootJ, "colorQuantity");
     if (colorQuantityJ)

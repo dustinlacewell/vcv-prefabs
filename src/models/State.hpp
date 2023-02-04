@@ -16,6 +16,7 @@ struct State
     Vec pos = Vec(30, 30);
 
     bool browserMode;
+    bool monoIcon;
 
     ModuleTagManager tagManager;
     ModuleSorter moduleSorter;

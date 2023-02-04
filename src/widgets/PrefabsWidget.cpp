@@ -177,6 +177,23 @@ void PrefabsWidget::appendContextMenu(Menu* menu)
     searchResults->quantity = &state->searchResultsQuantity;
     menu->addChild(searchResults);
 
+    auto monoIcon = new ModularMenuItem();
+    monoIcon->text = "Monochrome icon";
+    monoIcon->rightText = CHECKMARK(state->monoIcon);
+    monoIcon->visibleCallback = [=]() {
+        monoIcon->rightText = CHECKMARK(state->monoIcon);
+        return true;
+    };
+    monoIcon->buttonCallback = [=](const event::Button& e) {
+        if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_LEFT) {
+            state->monoIcon = !state->monoIcon;
+        }
+
+        e.consume(monoIcon);
+        return false;
+    };
+    menu->addChild(monoIcon);
+
     auto colorResults = new rack::ui::Slider();
     colorResults->box.size.x = 220.0f;
     colorResults->quantity = &state->colorQuantity;
