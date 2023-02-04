@@ -77,7 +77,14 @@ void IconWidget::draw(const DrawArgs& args)
     auto color = rainbow(state->discoSpeedQuantity.getValue() > 0.0001 ? disco.amount : colorValue);
     nvgBeginPath(args.vg);
     nvgCircle(args.vg, box.size.x / 2 + .5, box.size.y / 2 + .5, 33);
-    nvgFillColor(args.vg, color);
+    if (state->monoIcon) {
+        // use colorValue to determine brightness
+        auto brightness = colorValue * 255;
+        nvgFillColor(args.vg, nvgRGB(brightness, brightness, brightness));
+    }
+    else {
+        nvgFillColor(args.vg, color);
+    }
     nvgFill(args.vg);
 
     OpaqueWidget::draw(args);
