@@ -57,7 +57,7 @@ add_compile_options(-Wall -Wextra -Wno-unused-parameter)
 if (DEFINED CMAKE_CXX_STANDARD)
     message(STATUS "Retaining CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}")
 else ()
-    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD 17)
     message(STATUS "Defaulting CMAKE_CXX_STANDARD to ${CMAKE_CXX_STANDARD}")
 endif ()
 
