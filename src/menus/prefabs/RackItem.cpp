@@ -1,47 +1,45 @@
-#include "PrefabItem.hpp"
+#include "RackItem.hpp"
 #include <patch.hpp>
 #include "utils/patches.hpp"
 
-PrefabItem::PrefabItem(State* state, Prefab prefab)
+RackItem::RackItem(State* state, Rack newRack) : rack(newRack)
 {
     this->state = state;
-    this->text = prefab.getName();
+    this->text = newRack.name;
     this->rightText = "";
     this->source = "";
-    this->prefab = prefab;
+    this->rack = newRack;
     this->tooltip = new Tooltip;
     APP->scene->addChild(tooltip);
-    tooltip->text = "Missing modules:\n" + prefab.missingReport();
+    tooltip->text = "Missing modules:\n" + newRack.missingReport();
     tooltip->hide();
 }
 
-void PrefabItem::onButton(const event::Button& e)
+void RackItem::onButton(const event::Button& e)
 {
     e.consume(this);
     if (this->disabled) {
         return;
     }
 
-    // get prefab.filename's extension
-    std::string extension = prefab.filename.substr(prefab.filename.find_last_of(".") + 1);
+    // get rack.filename's extension
+    std::string extension = rack.filename.substr(rack.filename.find_last_of(".") + 1);
 
     if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_LEFT) {
-        auto rack = APP->scene->rack;
-
         // if it's a .vcv file, unarchive it first
-        if (extension == "vcv" && !isPatchLegacyV1(prefab.filename)) {
-            auto patchRoot = asset::user("prefab-tmp");
+        if (extension == "vcv" && !isPatchLegacyV1(rack.filename)) {
+            auto patchRoot = asset::user("rack-tmp");
             auto patchPath = patchRoot + '/' + "patch.json";
 
             system::createDirectories(patchRoot);
-            system::unarchiveToDirectory(prefab.filename, patchRoot);
-            rack->loadSelection(patchPath);
+            system::unarchiveToDirectory(rack.filename, patchRoot);
+            APP->scene->rack->loadSelection(patchPath);
         }
         else {
-            rack->loadSelection(prefab.filename);
+            APP->scene->rack->loadSelection(rack.filename);
         }
 
-        for (auto mw : rack->getSelected()) {
+        for (auto mw : APP->scene->rack->getSelected()) {
             e.consume(mw);
         }
     }
@@ -59,7 +57,7 @@ void PrefabItem::onButton(const event::Button& e)
             if (overlay) {
                 overlay->requestDelete();
             }
-            APP->patch->load(prefab.filename);
+            APP->patch->load(rack.filename);
             return true;
         };
         menu->addChild(item);
@@ -73,12 +71,12 @@ void PrefabItem::onButton(const event::Button& e)
     }
 }
 
-void PrefabItem::onHover(const event::Hover& e)
+void RackItem::onHover(const event::Hover& e)
 {
     e.consume(this);
 }
 
-void PrefabItem::onEnter(const event::Enter& e)
+void RackItem::onEnter(const event::Enter& e)
 {
     e.consume(this);
     if (this->disabled) {
@@ -86,30 +84,30 @@ void PrefabItem::onEnter(const event::Enter& e)
     }
 }
 
-void PrefabItem::onLeave(const event::Leave& e)
+void RackItem::onLeave(const event::Leave& e)
 {
     e.consume(this);
     tooltip->hide();
 }
 
-void PrefabItem::step()
+void RackItem::step()
 {
     // if the control key is pressed
     if ((APP->window->getMods() & RACK_MOD_MASK) == RACK_MOD_CTRL) {
-        text = prefab.filename;
+        text = rack.filename;
     }
     else {
-        text = prefab.getName();
+        text = rack.name;
     }
 
-    rightText = prefab.isValid ? source : source + "!";
-    this->disabled = !prefab.isValid;
+    rightText = rack.isValid ? source : source + "!";
+    this->disabled = !rack.isValid;
     tooltip->box.pos = APP->scene->mousePos;
 
     ModularMenuItem::step();
 }
 
-void PrefabItem::draw(const DrawArgs& args)
+void RackItem::draw(const DrawArgs& args)
 {
     MenuItem::draw(args);
     //    ModularMenuItem::draw(args);

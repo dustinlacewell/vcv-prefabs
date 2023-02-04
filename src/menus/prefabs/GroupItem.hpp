@@ -7,12 +7,12 @@ using namespace rack;
 #include "menus/ModularMenuItem.hpp"
 #include "models/State.hpp"
 
-struct TagItem : ModularMenuItem
+struct GroupItem : ModularMenuItem
 {
     State* state;
-    std::string tag;
-    std::set<Prefab> prefabs;
+    std::string group;
+    std::set<Rack> racks;
 
-    TagItem(State* module, std::string tag, std::set<Prefab> prefabs);
+    GroupItem(State* module, std::string groupName, std::set<Rack> groupRacks);
     Menu* createChildMenu() override;
 };

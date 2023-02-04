@@ -3,9 +3,6 @@
 #include <rack.hpp>
 #include "models/ModuleSorter.hpp"
 #include "models/ModuleTagManager.hpp"
-#include "models/PatchStore.hpp"
-#include "models/Prefab.hpp"
-#include "models/PrefabStore.hpp"
 #include "models/SimpleQuantity.hpp"
 #include "widgets/IconWidget.hpp"
 

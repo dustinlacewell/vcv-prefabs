@@ -12,9 +12,9 @@
 #include "menus/modules/LibraryResultItem.hpp"
 #include "menus/modules/LibraryTagItem.hpp"
 #include "menus/modules/LibraryTagMenu.hpp"
+#include "menus/prefabs/GroupItem.hpp"
 #include "menus/prefabs/PluginItem.hpp"
-#include "menus/prefabs/PrefabItem.hpp"
-#include "menus/prefabs/TagItem.hpp"
+#include "menus/prefabs/RackItem.hpp"
 #include "models/ModuleIndex.hpp"
 #include "models/State.hpp"
 #include "ui/ModelBox.hpp"
@@ -27,6 +27,7 @@ using namespace rack;
 struct IconMenuBuilder
 {
     State* state;
+
     ModuleIndex modules;
     Menu* menu;
     SearchBox* searchBox;
@@ -50,8 +51,8 @@ struct IconMenuBuilder
         return item;
     }
 
-    PrefabSource& getLocalPrefabSource() const { return state->store.prefabs.getLocalSource(); }
-    PrefabSource& getLocalPatchSource() const { return state->store.patches.getLocalSource(); }
+    //    PrefabSource& getLocalPrefabSource() const { return state->store.prefabs.getLocalSource(); }
+    //    PrefabSource& getLocalPatchSource() const { return state->store.patches.getLocalSource(); }
 
     /**
      * Search
@@ -91,16 +92,16 @@ struct IconMenuBuilder
             return searchBox->text != "";
         };
 
-        for (const auto& sourcePair : state->store.prefabs.sources) {
+        for (const auto& sourcePair : state->prefabsIndex.sources) {
             auto slug = sourcePair.first;
             auto source = sourcePair.second;
 
-            for (const auto& prefab : source.prefabs) {
-                auto item = new PrefabItem(state, prefab);
+            for (const auto& racks : source.racks) {
+                auto item = new RackItem(state, racks);
                 item->source = slug;
-                item->visibleCallback = [this, prefab]() {
+                item->visibleCallback = [this, racks]() {
                     bool nonEmpty = this->searchBox->text != "";
-                    bool found = prefab.getName().find(this->searchBox->text) != std::string::npos;
+                    bool found = racks.name.find(this->searchBox->text) != std::string::npos;
                     return nonEmpty && found;
                 };
                 menu->addChild(item);
@@ -127,19 +128,19 @@ struct IconMenuBuilder
             return searchBox->text != "";
         };
 
-        auto& localSource = state->store.patches.getLocalSource();
-        for (const auto& prefab : localSource.prefabs) {
-            auto item = new PrefabItem(state, prefab);
+        auto& localSource = state->patchesIndex.sources["local"];
+        for (const auto& rack : localSource.racks) {
+            auto item = new RackItem(state, rack);
             item->source = "local";
-            item->visibleCallback = [this, prefab]() {
+            item->visibleCallback = [this, rack]() {
                 bool nonEmpty = this->searchBox->text != "";
-                bool found = prefab.getName().find(this->searchBox->text) != std::string::npos;
+                bool found = rack.name.find(this->searchBox->text) != std::string::npos;
                 return nonEmpty && found;
             };
             menu->addChild(item);
         }
 
-        for (const auto& sourcePair : state->store.patches.sources) {
+        for (const auto& sourcePair : state->patchesIndex.sources) {
             auto slug = sourcePair.first;
             auto source = sourcePair.second;
 
@@ -147,12 +148,12 @@ struct IconMenuBuilder
                 continue;
             }
 
-            for (const auto& prefab : source.prefabs) {
-                auto item = new PrefabItem(state, prefab);
+            for (const auto& rack : source.racks) {
+                auto item = new RackItem(state, rack);
                 item->source = slug;
-                item->visibleCallback = [this, prefab]() {
+                item->visibleCallback = [this, rack]() {
                     bool nonEmpty = this->searchBox->text != "";
-                    bool found = prefab.getName().find(this->searchBox->text) != std::string::npos;
+                    bool found = rack.name.find(this->searchBox->text) != std::string::npos;
                     return nonEmpty && found;
                 };
                 menu->addChild(item);
@@ -197,21 +198,22 @@ struct IconMenuBuilder
 
     void createLocalPrefabUntagged() const
     {
-        auto& localSource = state->store.prefabs.getLocalSource();
+        //        auto& localSource = state->store.prefabs.getLocalSource();
+        auto& localSource = state->prefabsIndex.sources["local"];
 
-        auto untagged = localSource.tags.find("untagged");
-        if (untagged != localSource.tags.end()) {
-            makeDefault(new TagItem(state, "untagged", untagged->second));
+        auto untagged = localSource.groups.find("untagged");
+        if (untagged != localSource.groups.end()) {
+            makeDefault(new GroupItem(state, "untagged", untagged->second));
         }
     }
 
     void createLocalPrefabTags() const
     {
-        auto& localSource = state->store.prefabs.getLocalSource();
-        for (auto& [tagName, tagPrefabs] : localSource.tags) {
-            if (tagName == "untagged")
+        auto& localSource = state->prefabsIndex.sources["local"];
+        for (auto& [groupName, groupPrefabs] : localSource.groups) {
+            if (groupName == "untagged")
                 continue;
-            makeDefault(new TagItem(state, tagName, tagPrefabs));
+            makeDefault(new GroupItem(state, groupName, groupPrefabs));
         }
 
         createLocalPrefabUntagged();
@@ -219,7 +221,7 @@ struct IconMenuBuilder
 
     void createLocalPrefabTagsByModule() const
     {
-        auto& localSource = state->store.prefabs.getLocalSource();
+        auto& localSource = state->prefabsIndex.sources["local"];
         auto pluginsItem = makeDefault(new ModularMenuItem());
         pluginsItem->text = "by module:";
         pluginsItem->childMenuCallback = [this, plugins = localSource.plugins](ModularMenuItem* item, Menu* menu) {
@@ -246,22 +248,22 @@ struct IconMenuBuilder
         return title;
     }
 
-    auto createPrefabSourceMenu(const PrefabSource& source) const
+    auto createPrefabSourceMenu(const SourceIndex source) const
     {
         std::vector<Widget*> widgets = {};
 
         // tagged
-        for (auto& [tagName, tagPrefabs] : source.tags) {
-            if (tagName == "untagged")
+        for (auto& [groupName, groupPrefabs] : source.groups) {
+            if (groupName == "untagged")
                 continue;
-            auto tag = new TagItem(state, tagName, tagPrefabs);
+            auto tag = new GroupItem(state, groupName, groupPrefabs);
             widgets.push_back(tag);
         }
 
         // untagged
-        auto untagged = source.tags.find("untagged");
-        if (untagged != source.tags.end()) {
-            auto tag = new TagItem(state, "untagged", untagged->second);
+        auto untagged = source.groups.find("untagged");
+        if (untagged != source.groups.end()) {
+            auto tag = new GroupItem(state, "untagged", untagged->second);
             widgets.push_back(tag);
         }
 
@@ -281,21 +283,21 @@ struct IconMenuBuilder
 
     void createPluginPrefabItems() const
     {
-        for (const auto& source : state->store.prefabs.sources) {
+        for (const auto& source : state->prefabsIndex.sources) {
             const auto& sourceName = source.first;
-            const auto& sourcePrefabs = source.second;
+            const auto& sourceIndex = source.second;
 
             if (sourceName == "local") {
                 continue;
             }
 
-            if (sourcePrefabs.total == 0)
+            if (sourceIndex.racks.size() == 0)
                 continue;
 
             auto item = makeDefault(new ModularMenuItem());
             item->text = sourceName;
-            item->childMenuCallback = [this, sourcePrefabs](ModularMenuItem* item, Menu* subMenu) {
-                auto widgets = createPrefabSourceMenu(sourcePrefabs);
+            item->childMenuCallback = [this, sourceIndex](ModularMenuItem* item, Menu* subMenu) {
+                auto widgets = createPrefabSourceMenu(sourceIndex);
                 for (auto widget : widgets) {
                     subMenu->addChild(widget);
                 }
@@ -331,21 +333,21 @@ struct IconMenuBuilder
 
     void createLocalPatchUntagged() const
     {
-        auto& localSource = state->store.patches.getLocalSource();
+        auto& localSource = state->patchesIndex.sources["local"];
 
-        auto untagged = localSource.tags.find("untagged");
-        if (untagged != localSource.tags.end()) {
-            makeDefault(new TagItem(state, "untagged", untagged->second));
+        auto untagged = localSource.groups.find("untagged");
+        if (untagged != localSource.groups.end()) {
+            makeDefault(new GroupItem(state, "untagged", untagged->second));
         }
     }
 
     void createLocalPatchTags() const
     {
-        auto& localSource = state->store.patches.getLocalSource();
-        for (auto& [tagName, tagPatches] : localSource.tags) {
-            if (tagName == "untagged")
+        auto& localSource = state->patchesIndex.sources["local"];
+        for (auto& [groupName, tagPatches] : localSource.groups) {
+            if (groupName == "untagged")
                 continue;
-            makeDefault(new TagItem(state, tagName, tagPatches));
+            makeDefault(new GroupItem(state, groupName, tagPatches));
         }
 
         createLocalPatchUntagged();
@@ -366,26 +368,26 @@ struct IconMenuBuilder
         return title;
     }
 
-    auto createPatchSourceMenu(const PatchSource& source) const
+    auto createPatchSourceMenu(const SourceIndex source) const
     {
-        if (source.total == 0) {
+        if (source.racks.empty()) {
             return std::vector<Widget*>{};
         }
 
         std::vector<Widget*> widgets = {};
 
         // tagged
-        for (auto& [tagName, tagPatches] : source.tags) {
-            if (tagName == "untagged")
+        for (auto& [groupName, tagPatches] : source.groups) {
+            if (groupName == "untagged")
                 continue;
-            auto tag = new TagItem(state, tagName, tagPatches);
+            auto tag = new GroupItem(state, groupName, tagPatches);
             widgets.push_back(tag);
         }
 
         // untagged
-        auto untagged = source.tags.find("untagged");
-        if (untagged != source.tags.end()) {
-            auto tag = new TagItem(state, "untagged", untagged->second);
+        auto untagged = source.groups.find("untagged");
+        if (untagged != source.groups.end()) {
+            auto tag = new GroupItem(state, "untagged", untagged->second);
             widgets.push_back(tag);
         }
 
@@ -405,21 +407,21 @@ struct IconMenuBuilder
 
     void createPluginPatchItems() const
     {
-        for (const auto& source : state->store.patches.sources) {
+        for (const auto& source : state->patchesIndex.sources) {
             const auto& sourceName = source.first;
-            const auto& sourcePrefabs = source.second;
+            const auto& sourceIndex = source.second;
 
             if (sourceName == "local") {
                 continue;
             }
 
-            if (sourcePrefabs.total == 0)
+            if (sourceIndex.racks.empty())
                 continue;
 
             auto item = makeDefault(new ModularMenuItem());
             item->text = sourceName;
-            item->childMenuCallback = [this, sourcePrefabs](ModularMenuItem* item, Menu* subMenu) {
-                auto widgets = createPrefabSourceMenu(sourcePrefabs);
+            item->childMenuCallback = [this, sourceIndex](ModularMenuItem* item, Menu* subMenu) {
+                auto widgets = createPrefabSourceMenu(sourceIndex);
                 for (auto widget : widgets) {
                     subMenu->addChild(widget);
                 }
@@ -430,12 +432,12 @@ struct IconMenuBuilder
     void createPluginPatches() const
     {
         createPluginPatchLabel();
-        auto sources = state->store.patches.sources;
+        auto sources = state->threadedStore.patchSources;
         auto total = 0;
-        for (auto& [name, source] : sources) {
-            if (name == "local")
+        for (auto source : sources) {
+            if (source.getSlug() == "local")
                 continue;
-            total += source.total;
+            total += source.getTotal();
         }
         if (total == 0)
             return;
@@ -472,7 +474,7 @@ struct IconMenuBuilder
     void createModuleTagIndexMenu()
     {
         bool favoritesOnly = !modPressed(RACK_MOD_CTRL);
-        auto label = favoritesOnly ? "Favorites by tag:" : "Modules by tag:";
+        auto label = favoritesOnly ? "Favorites by group:" : "Modules by group:";
         auto tagIndexMenu = new LibraryTagMenu(state, label, favoritesOnly);
         tagIndexMenu->visibleCallback = [this]() {
             return searchBox->text == "";
@@ -519,15 +521,6 @@ struct IconMenuBuilder
     void build()
     {
         menu = createMenu();
-
-        if (state->store.locked) {
-            // create a menu notifying the user that the sources is refreshing
-            auto label = new ModularMenuLabel();
-            label->text = "Refreshing sources...";
-            menu->addChild(label);
-            return;
-        }
-
         modules.results.clear();
 
         createSearchBox();

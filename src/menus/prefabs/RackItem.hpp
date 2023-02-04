@@ -7,14 +7,14 @@ using namespace rack;
 #include "menus/ModularMenuItem.hpp"
 #include "models/State.hpp"
 
-struct PrefabItem : ModularMenuItem
+struct RackItem : ModularMenuItem
 {
     State* state;
-    Prefab prefab;
+    Rack rack;
     Tooltip* tooltip;
     std::string source;
 
-    PrefabItem(State* module, Prefab prefab);
+    RackItem(State* module, Rack rack);
     void onButton(const event::Button& e) override;
     void onHover(const event::Hover& e) override;
     void onEnter(const event::Enter& e) override;

@@ -55,7 +55,7 @@ Right-clicking on the Prefabs widget will bring up a menu where you can access y
 
 ### Local Prefabs
 
-Below the search box, you will all of your local prefabs, organized by tag.
+Below the search box, you will all of your local prefabs, organized by group.
 
 Just click or drag the prefab into the patch.
 
@@ -63,7 +63,7 @@ Just click or drag the prefab into the patch.
 <img src="images/prefab.gif">
 </p>
 
-Below the tag list, there is a sub-menu `by module:` where your prefabs are organized by the modules they use.
+Below the group list, there is a sub-menu `by module:` where your prefabs are organized by the modules they use.
 
 ### Plugin Prefabs
 
@@ -109,7 +109,7 @@ By typing into the search box, you can filter the prefabs and modules.
 
 To save a prefab, select some modules, right-click and pick `Save selection as...`
 
-This will open the save dialog. Save your prefab under a folder to give it a tag.
+This will open the save dialog. Save your prefab under a folder to give it a group.
 
 <p align="center">
 <img src="images/creation.gif">

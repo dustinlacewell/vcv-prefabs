@@ -33,7 +33,6 @@ State::State()
     discoSpeedQuantity.value = 0.0;
     discoSpeedQuantity.rounded = false;
 
-    store = Store();
     tagManager = ModuleTagManager();
 }
 
@@ -170,15 +169,15 @@ void State::load()
     for (auto extraSource : extraPrefabSources) {
         auto slug = std::get<0>(extraSource);
         auto root = std::get<1>(extraSource);
-        auto prefabSource = new PrefabSource(slug, root);
-        store.prefabs.addSource(*prefabSource);
+        auto prefabSource = FileSource(slug, root);
+        threadedStore.prefabSources.push_back(prefabSource);
     }
 
     for (auto extraSource : extraPatchSources) {
         auto slug = std::get<0>(extraSource);
         auto root = std::get<1>(extraSource);
-        auto patchSource = new PatchSource(slug, root);
-        store.patches.addSource(*patchSource);
+        auto patchSource = ArchiveSource(slug, root);
+        threadedStore.patchSources.push_back(patchSource);
     }
 
     DINFO("[Prefabs] Loaded Settings from %s", path.c_str());

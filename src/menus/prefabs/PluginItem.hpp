@@ -11,8 +11,8 @@ struct PluginItem : ModularMenuItem
 {
     State* state;
     std::string pluginName;
-    ModuleMap modules;
+    RackGroups modules;
 
-    PluginItem(State* module, std::string pluginName, ModuleMap modules);
+    PluginItem(State* module, std::string pluginName, RackGroups modules);
     Menu* createChildMenu() override;
 };

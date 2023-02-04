@@ -11,8 +11,8 @@ struct ModuleItem : ModularMenuItem
 {
     State* state;
     std::string moduleName;
-    PrefabSet prefabs;
+    RackSet racks;
 
-    ModuleItem(State* state, std::string moduleName, PrefabSet prefabs);
+    ModuleItem(State* state, std::string moduleName, RackSet racks);
     Menu* createChildMenu() override;
 };

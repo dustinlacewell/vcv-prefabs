@@ -1,12 +1,8 @@
-#include <dirent.h>
-#include <sys/stat.h>
 #include <rack.hpp>
 
-#include "Prefabs.hpp"
 #include "utils/logging.hpp"
 #include "widgets/FakeBrowser.hpp"
 #include "widgets/PrefabsWidget.hpp"
-#include "widgets/SnowWidget.hpp"
 
 using namespace rack::dsp;
 
