@@ -91,14 +91,14 @@ void PrefabsWidget::step()
 
     auto state = prefabsModule->widget->state;
 
-    auto prefabsTotal = min(9999, state->threadedStore.getTotalPrefabs());
+    auto prefabsTotal = min(9999, state->store.getTotalPrefabs());
     auto prefabsTotalStr = std::to_string(prefabsTotal);
     while (prefabsTotalStr.length() < 4) {
         prefabsTotalStr = "0" + prefabsTotalStr;
     }
     prefabsLabel->text = prefabsTotalStr;
 
-    auto patchesTotal = min(9999, state->threadedStore.getTotalPatches());
+    auto patchesTotal = min(9999, state->store.getTotalPatches());
     auto patchesTotalStr = std::to_string(patchesTotal);
     while (patchesTotalStr.length() < 4) {
         patchesTotalStr = "0" + patchesTotalStr;

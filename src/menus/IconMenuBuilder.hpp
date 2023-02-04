@@ -432,7 +432,7 @@ struct IconMenuBuilder
     void createPluginPatches() const
     {
         createPluginPatchLabel();
-        auto sources = state->threadedStore.patchSources;
+        auto sources = state->store.patchSources;
         auto total = 0;
         for (auto source : sources) {
             if (source.getSlug() == "local")
