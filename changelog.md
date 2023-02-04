@@ -1,5 +1,12 @@
 # Prefabs Changelog
 
+### 2.0.5 - 2/3/2023
+
+- New module look!
+- Shows total prefabs/patches/modules
+- Indicator light shows when data is being loaded
+- Unified prefab/patch handling should be much more performant
+
 ### 2.0.4 - 2/2/2023
 
 - Refreshing is now in a background thread which should keep the UI responsive
