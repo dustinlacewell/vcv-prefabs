@@ -14,8 +14,6 @@ Prefabs::Prefabs()
     configLight(WIDGET_LIGHT, "Status light");
 
     widget = nullptr;
-    float currentShow = params[SHOW_PARAM].getValue();
-    lastShowParam = currentShow;
 }
 
 void Prefabs::enableBrowserMode()
@@ -57,19 +55,6 @@ void Prefabs::process(const ProcessArgs& args)
             enableBrowserMode();
             locked = false;
         }
-
-        lastShowParam = widget->state->showing ? 1.0 : 0.0;
-    }
-
-    float currentShow = params[SHOW_PARAM].getValue();
-    bool buttonClicked = abs(lastShowParam - currentShow) > 0.001;
-    lastShowParam = currentShow;
-
-    if (buttonClicked) {
-        if (!widget->state->showing) {
-            widget->state->refresh();
-        }
-        widget->state->showing = !(widget->state->showing);
     }
 
     lights[WIDGET_LIGHT].setBrightness(widget->state->showing ? 1.0 : 0.0);

@@ -176,6 +176,7 @@ void State::load()
         auto slug = std::get<0>(extraSource);
         auto root = std::get<1>(extraSource);
         auto prefabSource = new FileSource(slug, root);
+        DINFO("[Prefabs] Adding extra prefab source %s", root.c_str());
         store.prefabSources.push_back(prefabSource);
     }
 
@@ -183,6 +184,7 @@ void State::load()
         auto slug = std::get<0>(extraSource);
         auto root = std::get<1>(extraSource);
         auto patchSource = new ArchiveSource(slug, root);
+        DINFO("[Prefabs] Adding extra patch source %s", root.c_str());
         store.patchSources.push_back(patchSource);
     }
 

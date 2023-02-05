@@ -12,7 +12,6 @@ struct Prefabs : rack::Module
 {
     enum ParamId
     {
-        SHOW_PARAM,
         PARAMS_LEN
     };
     enum InputId
@@ -29,8 +28,6 @@ struct Prefabs : rack::Module
         REFRESH_LIGHT,
         LIGHTS_LEN
     };
-
-    float lastShowParam;
 
     IconWidget* widget;
 

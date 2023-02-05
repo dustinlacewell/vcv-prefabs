@@ -164,6 +164,7 @@ int FileSource::crawlTag(std::string tagName)
 
 void FileSource::refresh()
 {
+    DINFO("[Prefabs] FileSource::refresh() %s", slug.c_str());
     racks.clear();
 
     this->crawlTag("");  // ungrouped racks
