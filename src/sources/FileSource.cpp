@@ -1,15 +1,44 @@
-#include <filesystem>
-#include <iostream>
+#include <ghc/filesystem.hpp>
+
+#include "efsw/efsw.hpp"
+
 #include <plugin.hpp>
 #include <rack.hpp>
 
 #include "FileSource.hpp"
-#include "ThreadedStore.hpp"
-#include "efsw/efsw.hpp"
 #include "utils/files.hpp"
 #include "utils/logging.hpp"
 
+namespace fs = ghc::filesystem;
+
 using namespace rack;
+
+static std::string eventString(efsw_action action)
+{
+    switch (action) {
+        case EFSW_ADD:
+            return "ADD";
+        case EFSW_DELETE:
+            return "DELETE";
+        case EFSW_MODIFIED:
+            return "MODIFIED";
+        case EFSW_MOVED:
+            return "MOVED";
+    }
+}
+
+static std::string dirname(std::string path)
+{
+    return path.substr(path.find_last_of('\\') + 1);
+}
+
+static std::string snipTrailingSlash(std::string str)
+{
+    if (str.back() == '\\') {
+        str.pop_back();
+    }
+    return str;
+}
 
 static void watchCallback(efsw_watcher watcher,
     efsw_watchid watchid,
@@ -19,28 +48,26 @@ static void watchCallback(efsw_watcher watcher,
     const char* old_filename,
     void* param)
 {
-    DINFO("FileSource::FileSource() old_filename: %s", old_filename);
-    DINFO("FileSource::FileSource() callback: %d: %s / %s", action, dir, filename);
     auto fullPath = std::string(dir) + "/" + std::string(filename);
 
     // bail if is directory
-    if (std::filesystem::is_directory(fullPath)) {
+
+    if (fs::is_directory(fullPath)) {
         return;
     }
 
     FileSource* that = (FileSource*)param;
     if (action == EFSW_ADD || action == EFSW_DELETE || action == EFSW_MODIFIED || action == EFSW_MOVED) {
+
+        auto watcherEvent = eventString(action);
+
         // snip trailing / using pop
-        std::string dirStr = dir;
-        if (dirStr.back() == '\\') {
-            dirStr.pop_back();
-        }
+        std::string dirStr = snipTrailingSlash(std::string(dir));
 
         // get dirname
-        std::string dirName = dirStr.substr(dirStr.find_last_of('\\') + 1);
+        std::string dirName = dirname(dirStr);
 
         // Check filename
-        DINFO("FileSource::FileSource() callback: %s / %s", dirName.c_str(), filename);
         that->readRack(dirName, filename);
     }
 }
@@ -54,7 +81,6 @@ FileSource::FileSource(std::string slug, std::string path) : Source(), slug(slug
 
 FileSource::~FileSource()
 {
-    DINFO("FileSource::~FileSource() %s", slug.c_str());
     if (watcher) {
         efsw_release(watcher);
         watcher = NULL;
@@ -111,22 +137,17 @@ json_t* FileSource::readJson(std::string filePath)
 
 Rack* FileSource::read(std::string tagName, std::string rackName)
 {
-    DINFO("My slug is %s", slug.c_str());
-    DINFO("My path is %s", path.c_str());
-    DINFO("[Prefabs] FileSource::read() tagName: %s, rackName: %s", tagName.c_str(), rackName.c_str());
     std::string rack_path = path + (tagName.empty() ? "" : ('/' + tagName)) + '/' + rackName;
 
-    DINFO("[Prefabs] FileSource::read() rack_path: %s", rack_path.c_str());
-
-    //    if (!isRegularFile(rack_path)) {
-    //        DINFO("[Prefabs] FileSource::read() rack_path is not a regular file: %s", rack_path.c_str());
-    //        return nullptr;
-    //    }
+    if (!isRegularFile(rack_path)) {
+        SINFO("FileSource::read() not a regular file: %s", rack_path.c_str());
+        return nullptr;
+    }
 
     json_t* rootJ = readJson(rack_path);
 
     if (!rootJ) {
-        DINFO("[Prefabs] FileSource::read() rootJ is null: %s", rack_path.c_str());
+        SINFO("rootJ is null: %s", rack_path.c_str());
         return nullptr;
     }
 
@@ -156,6 +177,7 @@ int FileSource::crawlTag(std::string tagName)
         if (isDirectory(tagPath + '/' + ent->d_name)) {
             return;
         }
+
         nRacks += readRack(tagName, ent->d_name);
     });
 
@@ -165,22 +187,21 @@ int FileSource::crawlTag(std::string tagName)
 void FileSource::refresh()
 {
     DINFO("[Prefabs] FileSource::refresh() %s", slug.c_str());
+
     racks.clear();
 
     this->crawlTag("");  // ungrouped racks
 
     eachDir(path, [this](auto ent) {
-        // check if ent is a directory
-        if (!isDirectory(path + '/' + ent->d_name)) {
-            return;
+        if (isDirectory(path + '/' + ent->d_name)) {
+            crawlTag(ent->d_name);
         }
-        crawlTag(ent->d_name);
     });
 }
 
 int FileSource::readRack(std::string groupName, std::string rackName)
 {
-    DINFO("[Prefabs] Loading rack %s %s %s", this->slug.c_str(), groupName.c_str(), rackName.c_str());
+    DINFO("[Prefabs] %s Loading rack %s %s", this->slug.c_str(), groupName.c_str(), rackName.c_str());
     auto rack = this->read(groupName, rackName);
 
     if (rack != nullptr) {

@@ -12,7 +12,7 @@ ifdef ARCH_WIN
 endif
 
 ifdef ARCH_MAC
-  EXTRA_CMAKE := -DCMAKE_OSX_ARCHITECTURES="x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15
+  EXTRA_CMAKE := -DCMAKE_OSX_ARCHITECTURES="x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9
   RACK_PLUGIN_EXT := dylib
   ifdef ARCH_ARM64
     EXTRA_CMAKE := -DCMAKE_OSX_ARCHITECTURES="arm64"
@@ -33,7 +33,7 @@ $(info cmake_rack_plugin target is '$(cmake_rack_plugin)')
 DEPS += $(cmake_rack_plugin)
 
 $(cmake_rack_plugin): CMakeLists.txt
-	$(CMAKE) -B $(CMAKE_BUILD) -DRACK_SDK_DIR=$(RACK_DIR) -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(CMAKE_BUILD)/dist $(EXTRA_CMAKE) -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15
+	$(CMAKE) -B $(CMAKE_BUILD) -DRACK_SDK_DIR=$(RACK_DIR) -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(CMAKE_BUILD)/dist $(EXTRA_CMAKE)
 	cmake --build $(CMAKE_BUILD) -- -j $(shell getconf _NPROCESSORS_ONLN)
 	cmake --install $(CMAKE_BUILD)
 
@@ -48,12 +48,3 @@ DISTRIBUTABLES += $(wildcard LICENSE*)
 
 # Include the Rack plugin Makefile framework
 include $(RACK_DIR)/plugin.mk
-
-ifdef ARCH_MAC
-  EXTRA_CMAKE := -DCMAKE_OSX_ARCHITECTURES="x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15
-  RACK_PLUGIN_EXT := dylib
-  ifdef ARCH_ARM64
-    EXTRA_CMAKE := -DCMAKE_OSX_ARCHITECTURES="arm64"
-    RACK_PLUGIN_ARCH := -arm64
-  endif
-endif

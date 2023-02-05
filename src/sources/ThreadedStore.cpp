@@ -13,39 +13,40 @@ int refreshing = 0;
 ThreadedStore::ThreadedStore()
 {
     auto localPrefabs = new FileSource("local", asset::user("selections"));
-    localPrefabs->setCallback([](Rack rack) {
-        std::unique_lock<std::mutex> lock(prefabsMutex);
-        prefabsQueue.push(rack);
-    });
-    prefabSources.push_back(localPrefabs);
+    addPrefabSource(localPrefabs);
 
     // for each plugin add a prefab source
     for (auto plugin : rack::plugin::plugins) {
-        auto pluginPrefabs = new FileSource(plugin->slug, asset::plugin(plugin, "res/selections"));
-        pluginPrefabs->setCallback([](Rack rack) {
-            std::unique_lock<std::mutex> lock(prefabsMutex);
-            prefabsQueue.push(rack);
-        });
-        prefabSources.push_back(pluginPrefabs);
+        auto pluginSource = new FileSource(plugin->slug, asset::plugin(plugin, "res/selections"));
+        addPrefabSource(pluginSource);
     }
 
     auto localPatches = new ArchiveSource("local", asset::user("patches"));
-    localPatches->setCallback([](Rack rack) {
-        std::unique_lock<std::mutex> lock(patchesMutex);
-        patchesQueue.push(rack);
-    });
-    patchSources.push_back(localPatches);
+    addPatchSource(localPatches);
 
     // for each plugin add a patch source
     for (auto plugin : rack::plugin::plugins) {
         auto pluginPatches = new ArchiveSource(plugin->slug, asset::plugin(plugin, "res/patches"));
-        pluginPatches->setCallback([](Rack rack) {
-            std::unique_lock<std::mutex> lock(patchesMutex);
-            patchesQueue.push(rack);
-            lock.unlock();
-        });
-        patchSources.push_back(pluginPatches);
+        addPatchSource(pluginPatches);
     }
+}
+
+void ThreadedStore::addPrefabSource(FileSource* source)
+{
+    source->setCallback([](Rack rack) {
+        std::unique_lock<std::mutex> lock(prefabsMutex);
+        prefabsQueue.push(rack);
+    });
+    prefabSources.push_back(source);
+}
+
+void ThreadedStore::addPatchSource(ArchiveSource* source)
+{
+    source->setCallback([](Rack rack) {
+        std::unique_lock<std::mutex> lock(patchesMutex);
+        patchesQueue.push(rack);
+    });
+    patchSources.push_back(source);
 }
 
 ThreadedStore::~ThreadedStore()

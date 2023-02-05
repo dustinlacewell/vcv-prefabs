@@ -15,6 +15,12 @@ ArchiveSource::~ArchiveSource()
     DINFO("ArchiveSource::~ArchiveSource() %s", this->getSlug().c_str());
 }
 
+void ArchiveSource::refresh()
+{
+    DINFO("ArchiveSource::refresh() %s", this->getSlug().c_str());
+    FileSource::refresh();
+}
+
 json_t* ArchiveSource::readJson(std::string path)
 {
     std::string extension = extensionFrom(path);

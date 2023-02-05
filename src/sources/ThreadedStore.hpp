@@ -30,4 +30,7 @@ struct ThreadedStore
     ThreadedStore();
     ~ThreadedStore();
     void refresh();
+
+    void addPrefabSource(FileSource* source);
+    void addPatchSource(ArchiveSource* source);
 };

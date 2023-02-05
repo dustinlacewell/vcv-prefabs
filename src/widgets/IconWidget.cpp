@@ -19,7 +19,6 @@ IconWidget::IconWidget()
 {
     state = new State();
     state->load();
-    state->refresh();
     menuBuilder = new IconMenuBuilder(state);
     disco = DiscoUpdater(state);
     addChild(createSvg());

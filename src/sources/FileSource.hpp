@@ -51,6 +51,6 @@ struct FileSource : Source
     int getTotal() override;
     std::string getSlug() override;
     std::string getPath() override;
-    void refresh() override;
+    virtual void refresh() override;
     void setCallback(std::function<void(Rack)> newCallback) override;
 };

@@ -1,18 +1,21 @@
-#include <filesystem>
+#include <ghc/filesystem.hpp>
 
 #include <plugin.hpp>
 #include <rack.hpp>
 
 #include "Rack.h"
 
-using fs = std::filesystem::path;
+namespace fs = ghc::filesystem;
+
+using path = ghc::filesystem::path;
+
 using namespace rack::plugin;
 
 Rack::Rack(std::string source, std::string group, std::string filename)
     : source(source), group(group), filename(filename)
 {
-    this->name = fs(filename).stem().string();
-    this->slug = source + "/" + name;
+    this->name = path(filename).stem().string();
+    this->slug = source + "/" + group + "/" + name;
 }
 
 void Rack::addPlugin(std::string pluginName, std::string moduleName)
