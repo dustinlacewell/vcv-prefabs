@@ -1,9 +1,7 @@
 #include <rack.hpp>
 
-using namespace rack;
-
 #define DINFO(format, ...)                            \
-    if (settings::devMode)                            \
+    if (rack::settings::devMode)                      \
     rack::logger::log(rack::logger::INFO_LEVEL,       \
         __FILE__,                                     \
         __LINE__,                                     \
@@ -15,7 +13,22 @@ using namespace rack;
 
 #ifdef SOURCE_DEBUGGING
 #define SINFO(format, ...)                                        \
-    if (settings::devMode)                                        \
+    if (rack::settings::devMode)                                  \
+    rack::logger::log(rack::logger::INFO_LEVEL,                   \
+        __FILE__,                                                 \
+        __LINE__,                                                 \
+        __FUNCTION__,                                             \
+        ("[Prefabs]: (Sources): " + std::string(format)).c_str(), \
+        ##__VA_ARGS__)
+#else
+#define SINFO(format, ...)
+#endif
+
+#define CLIENT_DEBUGGING
+
+#ifdef CLIENT_DEBUGGING
+#define CINFO(format, ...)                                        \
+    if (rack::settings::devMode)                                  \
     rack::logger::log(rack::logger::INFO_LEVEL,                   \
         __FILE__,                                                 \
         __LINE__,                                                 \

@@ -61,14 +61,8 @@ static void watchCallback(efsw_watcher watcher,
 
         auto watcherEvent = eventString(action);
 
-        // snip trailing / using pop
-        std::string dirStr = snipTrailingSlash(std::string(dir));
-
-        // get dirname
-        std::string dirName = dirname(dirStr);
-
         // Check filename
-        that->readRack(dirName, filename);
+        that->readRack(filename);
     }
 }
 
@@ -107,15 +101,15 @@ void FileSource::setCallback(std::function<void(Rack)> newCallback)
     callback = newCallback;
 }
 
-std::string FileSource::pathForTag(std::string tagName)
-{
-    return path + (tagName.empty() ? "" : ('/' + tagName));
-}
-
-std::string FileSource::pathForItem(std::string tagName, std::string prefabName)
-{
-    return pathForTag(tagName) + '/' + prefabName;
-}
+//std::string FileSource::pathForTag(std::string tagName)
+//{
+//    return path + (tagName.empty() ? "" : ('/' + tagName));
+//}
+//
+//std::string FileSource::pathForItem(std::string tagName, std::string prefabName)
+//{
+//    return pathForTag(tagName) + '/' + prefabName;
+//}
 
 json_t* FileSource::readJson(std::string filePath)
 {
@@ -135,24 +129,24 @@ json_t* FileSource::readJson(std::string filePath)
     return rootJ;
 }
 
-Rack* FileSource::read(std::string tagName, std::string rackName)
+Rack* FileSource::read(std::string filename)
 {
-    std::string rack_path = path + (tagName.empty() ? "" : ('/' + tagName)) + '/' + rackName;
-
-    if (!isRegularFile(rack_path)) {
-        SINFO("FileSource::read() not a regular file: %s", rack_path.c_str());
+    if (!isRegularFile(filename)) {
+        SINFO("FileSource::read() not a regular file: %s", filename.c_str());
         return nullptr;
     }
 
-    json_t* rootJ = readJson(rack_path);
+    auto groupname = findFirstChild(this->path, filename);
+
+    json_t* rootJ = readJson(filename);
 
     if (!rootJ) {
-        SINFO("rootJ is null: %s", rack_path.c_str());
+        SINFO("rootJ is null: %s", filename.c_str());
         return nullptr;
     }
 
-    auto group = tagName == "" ? "ungrouped" : tagName;
-    Rack rack = Rack(slug, group, rack_path);
+    auto group = groupname == "" ? "ungrouped" : groupname;
+    Rack rack = Rack(slug, group, filename);
     rack.fromJson(rootJ);
 
     rack.source = slug;
@@ -163,23 +157,25 @@ Rack* FileSource::read(std::string tagName, std::string rackName)
     return &racks.find(rack.slug)->second;
 }
 
-int FileSource::crawlTag(std::string tagName)
+std::vector<std::string> FileSource::filterFiles(std::vector<std::string>& files)
+{
+    return filesWithExtension(files, "vcvs");
+}
+
+int FileSource::crawlRoot(std::string root)
 {
     int nRacks = 0;
 
-    std::string tagPath = pathForTag(tagName);
-
-    if (!isDirectory(tagPath)) {
+    if (!isDirectory(root)) {
         return 0;
     }
 
-    eachDir(tagPath, [&](auto ent) {
-        if (isDirectory(tagPath + '/' + ent->d_name)) {
-            return;
-        }
+    auto rootFiles = allFiles(root);
+    auto rackFiles = filterFiles(rootFiles);
 
-        nRacks += readRack(tagName, ent->d_name);
-    });
+    for (auto rackFile : rackFiles) {
+        nRacks += readRack(rackFile);
+    }
 
     return nRacks;
 }
@@ -190,19 +186,21 @@ void FileSource::refresh()
 
     racks.clear();
 
-    this->crawlTag("");  // ungrouped racks
+    this->crawlRoot("");  // ungrouped racks
 
     eachDir(path, [this](auto ent) {
-        if (isDirectory(path + '/' + ent->d_name)) {
-            crawlTag(ent->d_name);
+        auto fullPath = path + '/' + ent->d_name;
+        if (isDirectory(fullPath)) {
+            crawlRoot(fullPath);
         }
     });
 }
 
-int FileSource::readRack(std::string groupName, std::string rackName)
+int FileSource::readRack(std::string filename)
 {
-    DINFO("[Prefabs] %s Loading rack %s %s", this->slug.c_str(), groupName.c_str(), rackName.c_str());
-    auto rack = this->read(groupName, rackName);
+    DINFO("[Prefabs] %s Loading rack %s", this->slug.c_str(), filename.c_str());
+
+    auto rack = this->read(filename);
 
     if (rack != nullptr) {
         DINFO("[Prefabs] Loaded rack %s", rack->slug.c_str());
@@ -212,6 +210,6 @@ int FileSource::readRack(std::string groupName, std::string rackName)
         return 0;
     }
 
-    DINFO("[Prefabs] Failed to load rack %s", rackName.c_str());
+    DINFO("[Prefabs] Failed to load rack %s", filename.c_str());
     return 0;
 }

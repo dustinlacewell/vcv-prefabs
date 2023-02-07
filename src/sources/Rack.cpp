@@ -4,6 +4,7 @@
 #include <rack.hpp>
 
 #include "Rack.h"
+#include "utils/files.hpp"
 
 namespace fs = ghc::filesystem;
 
@@ -14,7 +15,7 @@ using namespace rack::plugin;
 Rack::Rack(std::string source, std::string group, std::string filename)
     : source(source), group(group), filename(filename)
 {
-    this->name = path(filename).stem().string();
+    this->name = removeUUID(path(filename).stem().string());
     this->slug = source + "/" + group + "/" + name;
 }
 

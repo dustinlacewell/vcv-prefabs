@@ -14,6 +14,8 @@ Prefabs::Prefabs()
     configLight(WIDGET_LIGHT, "Status light");
 
     widget = nullptr;
+
+    process(ProcessArgs());
 }
 
 void Prefabs::enableBrowserMode()

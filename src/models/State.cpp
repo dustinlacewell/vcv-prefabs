@@ -1,6 +1,7 @@
 #include <rack.hpp>
 
 #include "State.hpp"
+#include "sources/StorageSource.hpp"
 #include "utils/logging.hpp"
 
 using namespace rack::dsp;
@@ -63,6 +64,17 @@ json_t* State::toJson()
     }
     json_object_set_new(rootJ, "extraPatchSources", extraPatchSourcesJ);
 
+    json_t* storageUsersJ = json_array();
+    for (auto& storageUser : storageUsers) {
+        // each item is a str, int tuple pair
+        json_t* storageUserJ = json_pack("[s, i]", std::get<0>(storageUser).c_str(), std::get<1>(storageUser));
+        json_array_append_new(storageUsersJ, storageUserJ);
+    }
+    json_object_set_new(rootJ, "storageUsers", storageUsersJ);
+
+    json_object_set_new(rootJ, "storageUsername", json_string(storageUsername.c_str()));
+    json_object_set_new(rootJ, "storagePassword", json_string(storagePassword.c_str()));
+
     return rootJ;
 }
 
@@ -119,6 +131,26 @@ void State::fromJson(json_t* rootJ)
             auto root = json_string_value(json_array_get(extraSourceJ, 1));
             auto pair = std::make_tuple(slug, root);
             extraPatchSources.insert(pair);
+        }
+    }
+
+    json_t* storageUsernameJ = json_object_get(rootJ, "storageUsername");
+    if (storageUsernameJ)
+        storageUsername = json_string_value(storageUsernameJ);
+
+    json_t* storagePasswordJ = json_object_get(rootJ, "storagePassword");
+    if (storagePasswordJ)
+        storagePassword = json_string_value(storagePasswordJ);
+
+    json_t* storageUsersJ = json_object_get(rootJ, "storageUsers");
+    if (storageUsersJ) {
+        storageUsers.clear();
+        for (int i = 0; i < json_array_size(storageUsersJ); i++) {
+            json_t* storageUserJ = json_array_get(storageUsersJ, i);
+            auto slug = json_string_value(json_array_get(storageUserJ, 0));
+            auto id = json_integer_value(json_array_get(storageUserJ, 1));
+            auto pair = std::make_tuple(slug, id);
+            storageUsers.push_back(pair);
         }
     }
 }
@@ -186,6 +218,8 @@ void State::load()
         DINFO("[Prefabs] Adding extra patch source %s", root.c_str());
         store.addPatchSource(patchSource);
     }
+
+    store.addPatchSource(new StorageSource(storageUsername, storagePassword, storageUsers));
 
     DINFO("[Prefabs] Loaded Settings from %s", path.c_str());
 }

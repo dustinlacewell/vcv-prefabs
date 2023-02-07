@@ -6,6 +6,7 @@
 #include "models/ModuleSorter.hpp"
 #include "models/ModuleTagManager.hpp"
 #include "models/SimpleQuantity.hpp"
+#include "sources/StorageSource.hpp"
 #include "sources/ThreadedStore.hpp"
 
 using namespace rack;
@@ -32,6 +33,10 @@ struct State
 
     std::set<std::tuple<std::string, std::string>> extraPrefabSources;
     std::set<std::tuple<std::string, std::string>> extraPatchSources;
+
+    std::string storageUsername;
+    std::string storagePassword;
+    std::vector<StorageUser> storageUsers;
 
     State();
 
