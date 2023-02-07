@@ -303,7 +303,12 @@ void StorageSource::refreshInThreads()
             }
 
             auto patchInfo = client.fetchPatchInfo(patch.id);
-            auto files = patchInfo.value().files;
+            if (!patchInfo.has_value()) {
+                SINFO("StorageSource::refresh() error: no patchInfo for %s", patch.slug.c_str());
+                continue;
+            }
+
+            auto files = (*patchInfo).files;
 
             // create a thread for this patch
             // run each of the file downloads of this patch in that thread

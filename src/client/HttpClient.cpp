@@ -53,7 +53,7 @@ static CURL* createCurl(std::optional<std::string> token)
     curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
 
     if (token.has_value()) {
-        std::string caPath = token.value();
+        std::string caPath = *token;
         curl_easy_setopt(curl, CURLOPT_CAINFO, caPath.c_str());
     }
 

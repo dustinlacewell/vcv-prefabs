@@ -19,7 +19,7 @@ Request StorageClient::makeRequest(std::string endpoint)
     request.headers["User-Agent"] = "Rack/Prefabs";
     request.headers["Accept"] = "application/json";
     if (token.has_value()) {
-        request.headers["Authorization"] = "Bearer " + token.value();
+        request.headers["Authorization"] = "Bearer " + *token;
     }
 
     request.cert = asset::plugin(pluginInstance, "res/cacert.pem");
@@ -119,7 +119,7 @@ bool StorageClient::downloadPatch(std::string url, std::string path) const
     request.url = url;
     request.headers["User-Agent"] = "Rack/Prefabs";
     request.headers["Accept"] = "application/json";
-    request.headers["Authorization"] = "Bearer " + token.value();
+    request.headers["Authorization"] = "Bearer " + *token;
     request.cert = asset::plugin(pluginInstance, "res/cacert.pem");
     request.filename = path;
 
