@@ -1,6 +1,8 @@
 #include "HttpClient.hpp"
 #include <curl/curl.h>
 #include <iostream>
+#include <thread>
+#include "utils/logging.hpp"
 
 // simple log function using cout, varargs to stderr
 
@@ -308,30 +310,40 @@ DownloadResponse DownloadRequest::send()
     // get the status code
     long httpCode = 0;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+    CINFO("Got status code: %d", httpCode);
+    response.status = httpCode;
 
-    // get the headers
-    struct curl_slist* headers = NULL;
-    curl_easy_getinfo(curl, CURLINFO_COOKIELIST, &headers);
-    for (struct curl_slist* header = headers; header; header = header->next) {
-        std::string headerStr = header->data;
-        size_t colonPos = headerStr.find(":");
-        if (colonPos == std::string::npos)
-            continue;
-        std::string key = headerStr.substr(0, colonPos);
-        std::string value = headerStr.substr(colonPos + 1);
-        response.headers[key] = value;
-    }
-
-    // get the cookies
-    for (struct curl_slist* header = headers; header; header = header->next) {
-        std::string headerStr = header->data;
-        size_t colonPos = headerStr.find(":");
-        if (colonPos == std::string::npos)
-            continue;
-        std::string key = headerStr.substr(0, colonPos);
-        std::string value = headerStr.substr(colonPos + 1);
-        response.cookies[key] = value;
-    }
+    //    try {
+    //        // get the headers
+    //        struct curl_slist* headers = NULL;
+    //        curl_easy_getinfo(curl, CURLINFO_COOKIELIST, &headers);
+    //        for (struct curl_slist* header = headers; header; header = header->next) {
+    //            std::string headerStr = header->data;
+    //            size_t colonPos = headerStr.find(":");
+    //            if (colonPos == std::string::npos)
+    //                continue;
+    //            std::string key = headerStr.substr(0, colonPos);
+    //            std::string value = headerStr.substr(colonPos + 1);
+    //            response.headers[key] = value;
+    //        }
+    //
+    //        // get the cookies
+    //        for (struct curl_slist* header = headers; header; header = header->next) {
+    //            std::string headerStr = header->data;
+    //            size_t colonPos = headerStr.find(":");
+    //            if (colonPos == std::string::npos)
+    //                continue;
+    //            std::string key = headerStr.substr(0, colonPos);
+    //            std::string value = headerStr.substr(colonPos + 1);
+    //            response.cookies[key] = value;
+    //        }
+    //    }
+    //    catch (std::exception& e) {
+    //        log("Could not parse headers: %s", e.what());
+    //        response.status = -1;
+    //        response.error = e.what();
+    //        return response;
+    //    }
 
     return response;
 }

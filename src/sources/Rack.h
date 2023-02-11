@@ -1,13 +1,13 @@
 #pragma once
 
+#include <optional>
 #include <rack.hpp>
 
 using std::map;
 using std::set;
 using std::string;
 
-struct Rack
-{
+struct Rack {
     std::string source;
     std::string group;
     std::string filename;
@@ -15,6 +15,7 @@ struct Rack
     // computed
     std::string name;
     std::string slug;
+    std::optional<std::string> displayName;
 
     time_t lastModified = 0;
 
@@ -30,6 +31,7 @@ struct Rack
     std::string missingReport();
 
     void fromJson(json_t* rootJ);
+    std::string getDisplayName();
 };
 
 bool operator<(const Rack& lhs, const Rack& rhs);

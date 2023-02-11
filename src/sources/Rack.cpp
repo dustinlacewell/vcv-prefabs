@@ -88,6 +88,14 @@ void Rack::fromJson(json_t* rootJ)
     }
 }
 
+std::string Rack::getDisplayName()
+{
+    if (this->displayName.has_value()) {
+        return *(this->displayName);
+    }
+    return this->name;
+}
+
 bool operator<(const Rack& lhs, const Rack& rhs)
 {
     return lhs.filename < rhs.filename;

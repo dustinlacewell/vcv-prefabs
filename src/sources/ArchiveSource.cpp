@@ -15,10 +15,15 @@ ArchiveSource::~ArchiveSource()
     DINFO("ArchiveSource::~ArchiveSource() %s", this->getSlug().c_str());
 }
 
-void ArchiveSource::refresh()
+std::vector<std::string> ArchiveSource::filterFiles(std::vector<std::string>& files)
 {
-    DINFO("ArchiveSource::refresh() %s", this->getSlug().c_str());
-    FileSource::refresh();
+    return filesWithExtension(files, "vcv");
+}
+
+void ArchiveSource::load()
+{
+    DINFO("ArchiveSource::load() %s", this->getSlug().c_str());
+    FileSource::load();
 }
 
 json_t* ArchiveSource::readJson(std::string path)

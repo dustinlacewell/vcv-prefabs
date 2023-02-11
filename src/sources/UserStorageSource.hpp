@@ -5,15 +5,16 @@
 typedef std::tuple<std::string, int> StorageUser;
 typedef std::tuple<std::string, int> StoragePatch;
 
-struct StorageSource : ArchiveSource {
+struct UserStorageSource : ArchiveSource {
     std::string username;
     std::string password;
     std::vector<StorageUser> users;
 
-    StorageSource(std::string username, std::string password, std::vector<StorageUser> users);
-    StorageSource();
-    ~StorageSource();
+    UserStorageSource(std::string username, std::string password, std::vector<StorageUser> users);
+    UserStorageSource();
+    ~UserStorageSource();
 
-    void refresh() override;
+    void load() override;
     void refreshInThreads();
+    Rack* read(std::string filename) override;
 };

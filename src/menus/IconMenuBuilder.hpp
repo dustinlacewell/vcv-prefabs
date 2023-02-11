@@ -24,8 +24,7 @@
 
 using namespace rack;
 
-struct IconMenuBuilder
-{
+struct IconMenuBuilder {
     State* state;
 
     ModuleIndex modules;
@@ -50,9 +49,6 @@ struct IconMenuBuilder
         menu->addChild(item);
         return item;
     }
-
-    //    PrefabSource& getLocalPrefabSource() const { return state->store.prefabs.getLocalSource(); }
-    //    PrefabSource& getLocalPatchSource() const { return state->store.patches.getLocalSource(); }
 
     /**
      * Search

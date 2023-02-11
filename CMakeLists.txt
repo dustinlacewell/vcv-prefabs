@@ -11,6 +11,7 @@ set(ADDITIONAL_PLUGIN_DISTRIBUTABLES README.md)
 include_directories(src)
 include_directories(efsw/include)
 include_directories(efsw/src)
+include_directories(date/include)
 
 include(RackSDK.cmake)
 

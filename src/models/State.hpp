@@ -6,13 +6,12 @@
 #include "models/ModuleSorter.hpp"
 #include "models/ModuleTagManager.hpp"
 #include "models/SimpleQuantity.hpp"
-#include "sources/StorageSource.hpp"
 #include "sources/ThreadedStore.hpp"
+#include "sources/UserStorageSource.hpp"
 
 using namespace rack;
 
-struct State
-{
+struct State {
     bool showing = true;
     Vec pos = Vec(30, 30);
 

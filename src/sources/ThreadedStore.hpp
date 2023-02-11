@@ -19,8 +19,7 @@ extern std::queue<Rack> patchesQueue;
 
 extern int refreshing;
 
-struct ThreadedStore
-{
+struct ThreadedStore {
     std::vector<FileSource*> prefabSources;
     std::vector<ArchiveSource*> patchSources;
 
@@ -29,7 +28,7 @@ struct ThreadedStore
 
     ThreadedStore();
     ~ThreadedStore();
-    void refresh();
+    void load();
 
     void addPrefabSource(FileSource* source);
     void addPatchSource(ArchiveSource* source);

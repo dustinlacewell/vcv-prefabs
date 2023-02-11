@@ -4,6 +4,7 @@
 
 #include <plugin.hpp>
 #include <rack.hpp>
+#include <thread>
 
 #include "FileSource.hpp"
 #include "utils/files.hpp"
@@ -50,8 +51,6 @@ static void watchCallback(efsw_watcher watcher,
 {
     auto fullPath = std::string(dir) + "/" + std::string(filename);
 
-    // bail if is directory
-
     if (fs::is_directory(fullPath)) {
         return;
     }
@@ -61,8 +60,9 @@ static void watchCallback(efsw_watcher watcher,
 
         auto watcherEvent = eventString(action);
 
-        // Check filename
-        that->readRack(filename);
+        if (watcherEvent == "MODIFIED") {
+            that->readRack(std::string(dir) + "/" + filename);
+        }
     }
 }
 
@@ -101,16 +101,6 @@ void FileSource::setCallback(std::function<void(Rack)> newCallback)
     callback = newCallback;
 }
 
-//std::string FileSource::pathForTag(std::string tagName)
-//{
-//    return path + (tagName.empty() ? "" : ('/' + tagName));
-//}
-//
-//std::string FileSource::pathForItem(std::string tagName, std::string prefabName)
-//{
-//    return pathForTag(tagName) + '/' + prefabName;
-//}
-
 json_t* FileSource::readJson(std::string filePath)
 {
     std::string extension = extensionFrom(filePath);
@@ -129,6 +119,14 @@ json_t* FileSource::readJson(std::string filePath)
     return rootJ;
 }
 
+bool endsWith(const std::string& A, const std::string& B)
+{
+    if (B.size() > A.size()) {
+        return false;
+    }
+    return A.rfind(B) == (A.size() - B.size());
+}
+
 Rack* FileSource::read(std::string filename)
 {
     if (!isRegularFile(filename)) {
@@ -137,6 +135,12 @@ Rack* FileSource::read(std::string filename)
     }
 
     auto groupname = findFirstChild(this->path, filename);
+
+    // if filename ends with groupname
+    // then groupname should be set to "untagged"
+    if (endsWith(filename, groupname)) {
+        groupname = "untagged";
+    }
 
     json_t* rootJ = readJson(filename);
 
@@ -167,6 +171,7 @@ int FileSource::crawlRoot(std::string root)
     int nRacks = 0;
 
     if (!isDirectory(root)) {
+        SINFO("FileSource::crawlRoot() not a directory: %s", root.c_str());
         return 0;
     }
 
@@ -180,13 +185,13 @@ int FileSource::crawlRoot(std::string root)
     return nRacks;
 }
 
-void FileSource::refresh()
+void FileSource::load()
 {
-    DINFO("[Prefabs] FileSource::refresh() %s", slug.c_str());
+    DINFO("[Prefabs] FileSource::load() %s", slug.c_str());
 
     racks.clear();
 
-    this->crawlRoot("");  // ungrouped racks
+    this->crawlRoot(path);  // ungrouped racks
 
     eachDir(path, [this](auto ent) {
         auto fullPath = path + '/' + ent->d_name;

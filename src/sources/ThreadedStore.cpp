@@ -59,15 +59,15 @@ ThreadedStore::~ThreadedStore()
     }
 }
 
-void ThreadedStore::refresh()
+void ThreadedStore::load()
 {
     std::thread([this]() {
         refreshing++;
         for (auto source : prefabSources) {
-            source->refresh();
+            source->load();
         }
         for (auto source : patchSources) {
-            source->refresh();
+            source->load();
         }
         refreshing--;
     }).detach();

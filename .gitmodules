@@ -1,3 +1,6 @@
 [submodule "efsw"]
 	path = efsw
 	url = https://github.com/SpartanJ/efsw
+[submodule "date"]
+	path = date
+	url = https://github.com/HowardHinnant/date.git

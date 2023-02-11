@@ -13,6 +13,6 @@ struct Source
     virtual std::string getSlug() = 0;
     virtual std::string getPath() = 0;
 
-    virtual void refresh() = 0;
+    virtual void load() = 0;
     virtual void setCallback(std::function<void(Rack)> newCallback) = 0;
 };

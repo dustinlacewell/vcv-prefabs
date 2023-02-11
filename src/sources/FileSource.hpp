@@ -32,7 +32,7 @@ struct FileSource : Source {
     std::map<std::string, Rack> racks;
 
     int crawlRoot(std::string root);
-    Rack* read(std::string filename);
+    virtual Rack* read(std::string filename);
 
    private:
     //    std::string pathForTag(std::string tagName);
@@ -52,6 +52,6 @@ struct FileSource : Source {
     int getTotal() override;
     std::string getSlug() override;
     std::string getPath() override;
-    virtual void refresh() override;
+    virtual void load() override;
     void setCallback(std::function<void(Rack)> newCallback) override;
 };

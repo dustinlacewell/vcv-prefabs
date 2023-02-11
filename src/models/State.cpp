@@ -1,7 +1,7 @@
 #include <rack.hpp>
 
 #include "State.hpp"
-#include "sources/StorageSource.hpp"
+#include "sources/UserStorageSource.hpp"
 #include "utils/logging.hpp"
 
 using namespace rack::dsp;
@@ -157,7 +157,7 @@ void State::fromJson(json_t* rootJ)
 
 void State::refresh()
 {
-    store.refresh();
+    store.load();
 }
 
 void State::save()
@@ -219,7 +219,7 @@ void State::load()
         store.addPatchSource(patchSource);
     }
 
-    store.addPatchSource(new StorageSource(storageUsername, storagePassword, storageUsers));
+    store.addPatchSource(new UserStorageSource(storageUsername, storagePassword, storageUsers));
 
     DINFO("[Prefabs] Loaded Settings from %s", path.c_str());
 }

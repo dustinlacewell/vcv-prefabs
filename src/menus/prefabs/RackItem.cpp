@@ -5,7 +5,7 @@
 RackItem::RackItem(State* state, Rack newRack) : rack(newRack)
 {
     this->state = state;
-    this->text = newRack.name;
+    this->text = newRack.getDisplayName();
     this->rightText = "";
     this->source = "";
     this->rack = newRack;
@@ -97,7 +97,7 @@ void RackItem::step()
         text = rack.filename;
     }
     else {
-        text = rack.name;
+        text = rack.getDisplayName();
     }
 
     rightText = rack.isValid ? source : source + "!";
