@@ -27,6 +27,7 @@ struct State {
 
     Index prefabsIndex;
     Index patchesIndex;
+    Index storageIndex;
 
     SimpleQuantity searchResultsQuantity;
     SimpleQuantity colorQuantity;

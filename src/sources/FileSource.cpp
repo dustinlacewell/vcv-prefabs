@@ -51,6 +51,9 @@ static void watchCallback(efsw_watcher watcher,
 {
     auto fullPath = std::string(dir) + "/" + std::string(filename);
 
+    // replace all \ with /
+    std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
+
     if (fs::is_directory(fullPath)) {
         return;
     }

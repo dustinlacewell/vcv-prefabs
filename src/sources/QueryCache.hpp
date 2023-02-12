@@ -24,7 +24,7 @@ struct QueryCache {
 
     std::vector<NewPatchInfo> getNewPatches();
     void downloadAll();
-    void downloadFile(std::string url, std::string path);
+    void downloadFile(NewPatchInfo patchInfo, PatchFile fileInfo);
     void downloadPatch(NewPatchInfo patchInfo);
     void refresh();
 };

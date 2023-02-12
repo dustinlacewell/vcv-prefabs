@@ -66,6 +66,17 @@ void IconWidget::step()
             }
             patchesMutex.unlock();
         }
+
+        // non-blocking attempt to acquire storageMutex
+        if (storageMutex.try_lock()) {
+            // if we have storage, add them to the menu
+            while (!storageQueue.empty()) {
+                auto rack = storageQueue.front();
+                storageQueue.pop();
+                state->storageIndex.addRack(rack);
+            }
+            storageMutex.unlock();
+        }
     }
 
     OpaqueWidget::step();

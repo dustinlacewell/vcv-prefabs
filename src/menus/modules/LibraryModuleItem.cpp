@@ -41,7 +41,8 @@ LibraryModuleItem::LibraryModuleItem(Model* model)
         return true;
     };
     this->visibleCallback = [model, this]() {
-        this->rightText = CHECKMARK(model->isFavorite());
+        // heart unicode
+        this->rightText = model->isFavorite() ? "\u2665" : "";
         return true;
     };
     this->tooltipCallback = [model]() {
