@@ -4,9 +4,11 @@
 
 std::mutex prefabsMutex;
 std::mutex patchesMutex;
+std::mutex storageMutex;
 
 std::queue<Rack> prefabsQueue;
 std::queue<Rack> patchesQueue;
+std::queue<Rack> storageQueue;
 
 int refreshing = 0;
 
@@ -49,6 +51,15 @@ void ThreadedStore::addPatchSource(ArchiveSource* source)
     patchSources.push_back(source);
 }
 
+void ThreadedStore::addStorageSource(UserStorageSource* source)
+{
+    source->setCallback([](Rack rack) {
+        std::unique_lock<std::mutex> lock(storageMutex);
+        storageQueue.push(rack);
+    });
+    userStorageSources.push_back(source);
+}
+
 void ThreadedStore::addUserQueryCache(UserQueryCache* cache)
 {
     userQueryCaches.push_back(cache);
@@ -60,6 +71,9 @@ ThreadedStore::~ThreadedStore()
         delete source;
     }
     for (auto source : patchSources) {
+        delete source;
+    }
+    for (auto source : userStorageSources) {
         delete source;
     }
     for (auto cache : userQueryCaches) {
@@ -75,6 +89,9 @@ void ThreadedStore::load()
             source->load();
         }
         for (auto source : patchSources) {
+            source->load();
+        }
+        for (auto source : userStorageSources) {
             source->load();
         }
         refreshing--;
@@ -105,6 +122,9 @@ int ThreadedStore::getTotalPatches()
 {
     int total = 0;
     for (auto source : patchSources) {
+        total += source->getTotal();
+    }
+    for (auto source : userStorageSources) {
         total += source->getTotal();
     }
     return total;

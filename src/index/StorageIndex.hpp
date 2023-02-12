@@ -2,14 +2,15 @@
 
 #include <rack.hpp>
 #include "SourceIndex.hpp"
+#include "UserIndex.hpp"
 #include "sources/Rack.h"
 
 using namespace rack;
 
-struct Index {
+struct StorageIndex {
     RackSet racks;
 
-    std::map<std::string, SourceIndex> sources;
+    std::map<std::string, UserIndex> users;
 
     void addRack(Rack rack);
 };

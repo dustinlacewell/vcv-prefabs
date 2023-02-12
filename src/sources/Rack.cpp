@@ -5,6 +5,7 @@
 
 #include "Rack.h"
 #include "utils/files.hpp"
+#include "utils/logging.hpp"
 
 namespace fs = ghc::filesystem;
 
@@ -85,6 +86,14 @@ void Rack::fromJson(json_t* rootJ)
                 }
             }
         }
+    }
+
+    // get metadata as NewPatchInfo
+    json_t* metadataJ = json_object_get(rootJ, "metadata");
+    if (metadataJ) {
+        DINFO("Loading metadata for %s", this->slug.c_str());
+        this->metadata = NewPatchInfo();
+        this->metadata->fromJson(metadataJ);
     }
 }
 

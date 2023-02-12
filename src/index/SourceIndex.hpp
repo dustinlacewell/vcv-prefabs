@@ -2,12 +2,9 @@
 
 #include <rack.hpp>
 #include "sources/Rack.h"
+#include "typedefs.hpp"
 
 using namespace rack;
-
-typedef std::set<Rack> RackSet;
-typedef std::map<std::string, RackSet> RackGroups;
-typedef std::map<std::string, RackGroups> PluginRacks;
 
 struct SourceIndex
 {

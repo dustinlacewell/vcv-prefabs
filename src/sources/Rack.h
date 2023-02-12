@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <rack.hpp>
+#include "client/responses/types/NewPatchInfo.hpp"
 
 using std::map;
 using std::set;
@@ -16,6 +17,7 @@ struct Rack {
     std::string name;
     std::string slug;
     std::optional<std::string> displayName;
+    std::optional<NewPatchInfo> metadata;
 
     time_t lastModified = 0;
 

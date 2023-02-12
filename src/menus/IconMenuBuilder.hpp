@@ -351,6 +351,10 @@ struct IconMenuBuilder {
 
     void createLocalPatches() const
     {
+        auto& localSource = state->patchesIndex.sources["local"];
+        if (localSource.racks.empty()) {
+            return;
+        }
         createLocalPatchesLabel();
         createLocalPatchTags();
     }
@@ -427,7 +431,6 @@ struct IconMenuBuilder {
 
     void createPluginPatches() const
     {
-        createPluginPatchLabel();
         auto sources = state->store.patchSources;
         auto total = 0;
         for (auto source : sources) {
@@ -437,7 +440,92 @@ struct IconMenuBuilder {
         }
         if (total == 0)
             return;
+        createPluginPatchLabel();
         createPluginPatchItems();
+    }
+
+    // storage patches
+
+    auto createStoragePatchLabel() const
+    {
+        auto title = makeDefault(new ModularMenuLabel());
+        title->text = "Storage patches:";
+        return title;
+    }
+
+    auto createStoragePatchSourceMenu(const SourceIndex source) const
+    {
+        if (source.racks.empty()) {
+            return std::vector<Widget*>{};
+        }
+
+        std::vector<Widget*> widgets = {};
+
+        // tagged
+        for (auto& [groupName, racks] : source.groups) {
+            int nonBroken = 0;
+
+            for (auto rack : racks) {
+                if (rack.isValid) {
+                    nonBroken++;
+                }
+            }
+
+            if (nonBroken == 0 && !modPressed(RACK_MOD_CTRL))
+                continue;
+
+            auto tag = new GroupItem(state, groupName, racks);
+            tag->rightText = nonBroken == 0 ? "!" : RIGHT_ARROW;
+            widgets.push_back(tag);
+        }
+
+        // by module
+        auto pluginsItem = new ModularMenuItem();
+        pluginsItem->text = "by module:";
+        pluginsItem->childMenuCallback = [this, plugins = source.plugins](ModularMenuItem* item, Menu* subMenu) {
+            for (auto [pluginName, pluginModules] : plugins) {
+                auto pluginItem = new PluginItem(this->state, pluginName, pluginModules);
+                if (!pluginItem->disabled) {
+                    subMenu->addChild(pluginItem);
+                }
+            }
+        };
+        widgets.push_back(pluginsItem);
+
+        return widgets;
+    }
+
+    void createStoragePatchItems() const
+    {
+        for (const auto& source : state->storageIndex.sources) {
+            const auto& sourceName = source.first;
+            const auto& sourceIndex = source.second;
+
+            if (sourceIndex.racks.empty())
+                continue;
+
+            auto item = makeDefault(new ModularMenuItem());
+            item->text = sourceName;
+            item->childMenuCallback = [this, sourceIndex](ModularMenuItem* item, Menu* subMenu) {
+                auto widgets = createStoragePatchSourceMenu(sourceIndex);
+                for (auto widget : widgets) {
+                    subMenu->addChild(widget);
+                }
+            };
+        }
+    }
+
+    void createStoragePatches() const
+    {
+        auto sources = state->store.userStorageSources;
+        auto total = 0;
+        for (auto source : sources) {
+            total += source->getTotal();
+        }
+        if (total == 0)
+            return;
+        createStoragePatchLabel();
+        createStoragePatchItems();
     }
 
     void createPatches() const
@@ -449,6 +537,7 @@ struct IconMenuBuilder {
 
         createLocalPatches();
         createPluginPatches();
+        createStoragePatches();
         createPatchResults();
     }
 

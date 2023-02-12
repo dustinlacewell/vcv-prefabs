@@ -213,7 +213,6 @@ void State::load()
         auto slug = std::get<0>(extraSource);
         auto root = std::get<1>(extraSource);
         auto prefabSource = new FileSource(slug, root);
-        prefabSource->createWatcher();
         DINFO("[Prefabs] Adding extra prefab source %s", root.c_str());
         store.addPrefabSource(prefabSource);
     }
@@ -222,14 +221,9 @@ void State::load()
         auto slug = std::get<0>(extraSource);
         auto root = std::get<1>(extraSource);
         auto patchSource = new ArchiveSource(slug, root);
-        patchSource->createWatcher();
         DINFO("[Prefabs] Adding extra patch source %s", root.c_str());
         store.addPatchSource(patchSource);
     }
-
-    auto patchSource = new ArchiveSource("Patch Storage", asset::user("patch-storage").c_str());
-    patchSource->createWatcher();
-    store.addPatchSource(patchSource);
 
     auto client = StorageClient(storageUsername, storagePassword);
     client.login();
@@ -237,9 +231,13 @@ void State::load()
     for (auto user : storageUsers) {
         auto slug = std::get<0>(user);
         auto id = std::get<1>(user);
+
         auto cache = new UserQueryCache(slug, id, client);
         QINFO("[Prefabs] Adding storage source %s", slug.c_str());
         store.addUserQueryCache(cache);
+
+        auto patchSource = new UserStorageSource(slug, asset::user("patch-storage/" + slug).c_str());
+        store.addStorageSource(patchSource);
     }
 
     DINFO("[Prefabs] Loaded Settings from %s", path.c_str());

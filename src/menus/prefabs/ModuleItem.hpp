@@ -7,12 +7,12 @@ using namespace rack;
 #include "menus/ModularMenuItem.hpp"
 #include "models/State.hpp"
 
-struct ModuleItem : ModularMenuItem
-{
+struct ModuleItem : ModularMenuItem {
     State* state;
+    std::string pluginName;
     std::string moduleName;
     RackSet racks;
 
-    ModuleItem(State* state, std::string moduleName, RackSet racks);
+    ModuleItem(State* state, std::string pluginName, std::string moduleName, RackSet racks);
     Menu* createChildMenu() override;
 };
