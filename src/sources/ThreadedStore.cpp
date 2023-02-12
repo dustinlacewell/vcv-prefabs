@@ -49,6 +49,11 @@ void ThreadedStore::addPatchSource(ArchiveSource* source)
     patchSources.push_back(source);
 }
 
+void ThreadedStore::addUserQueryCache(UserQueryCache* cache)
+{
+    userQueryCaches.push_back(cache);
+}
+
 ThreadedStore::~ThreadedStore()
 {
     for (auto source : prefabSources) {
@@ -56,6 +61,9 @@ ThreadedStore::~ThreadedStore()
     }
     for (auto source : patchSources) {
         delete source;
+    }
+    for (auto cache : userQueryCaches) {
+        delete cache;
     }
 }
 
@@ -68,6 +76,17 @@ void ThreadedStore::load()
         }
         for (auto source : patchSources) {
             source->load();
+        }
+        refreshing--;
+    }).detach();
+}
+
+void ThreadedStore::refresh()
+{
+    std::thread([this]() {
+        refreshing++;
+        for (auto cache : userQueryCaches) {
+            cache->refresh();
         }
         refreshing--;
     }).detach();

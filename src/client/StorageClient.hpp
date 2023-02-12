@@ -17,7 +17,7 @@ struct StorageClient {
     StorageClient(std::string username, std::string password);
     ~StorageClient();
     bool login();
-    std::vector<PatchResult> fetchUserPatches(int authorId);
-    std::optional<PatchInfo> fetchPatchInfo(int patchId);
+    std::vector<PatchResult> fetchUserPatches(int authorId, int count = 0);
+    std::optional<NewPatchInfo> fetchPatchInfo(int patchId);
     bool downloadPatch(std::string url, std::string path) const;
 };

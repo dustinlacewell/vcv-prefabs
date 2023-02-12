@@ -209,4 +209,28 @@ void PrefabsWidget::appendContextMenu(Menu* menu)
 
     auto tagMenu = state->tagManager.createToggleMenu();
     menu->addChild(tagMenu);
+
+    auto refreshMenu = new ModularMenuItem();
+    refreshMenu->text = "Refresh";
+    refreshMenu->visibleCallback = [=]() {
+        if (refreshing) {
+            refreshMenu->text = "Refreshing...";
+        }
+        else {
+            refreshMenu->text = "Refresh";
+        }
+        return true;
+    };
+    refreshMenu->buttonCallback = [=](const event::Button& e) {
+        if (refreshing) {
+            return false;
+        }
+        if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_LEFT) {
+            state->store.refresh();
+        }
+
+        e.consume(refreshMenu);
+        return true;
+    };
+    menu->addChild(refreshMenu);
 }

@@ -2,9 +2,6 @@
 
 #include "ArchiveSource.hpp"
 
-typedef std::tuple<std::string, int> StorageUser;
-typedef std::tuple<std::string, int> StoragePatch;
-
 struct UserStorageSource : ArchiveSource {
     std::string username;
     std::string password;

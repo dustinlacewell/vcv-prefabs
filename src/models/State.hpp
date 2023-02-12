@@ -7,9 +7,11 @@
 #include "models/ModuleTagManager.hpp"
 #include "models/SimpleQuantity.hpp"
 #include "sources/ThreadedStore.hpp"
-#include "sources/UserStorageSource.hpp"
 
 using namespace rack;
+
+typedef std::tuple<std::string, int> StorageUser;
+typedef std::tuple<std::string, int> StoragePatch;
 
 struct State {
     bool showing = true;
@@ -42,7 +44,8 @@ struct State {
     json_t* toJson();
     void fromJson(json_t* rootJ);
 
-    void refresh();
+    void reload();
     void save();
     void load();
+    void refresh();
 };
