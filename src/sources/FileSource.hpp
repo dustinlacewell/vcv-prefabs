@@ -35,9 +35,6 @@ struct FileSource : Source {
     virtual Rack* read(std::string filename);
 
    private:
-    //    std::string pathForTag(std::string tagName);
-    //    std::string pathForItem(std::string tagName, std::string prefabName);
-
     void addItem(Rack prefab);
 
    public:
@@ -45,6 +42,7 @@ struct FileSource : Source {
 
     FileSource(std::string slug, std::string path);
     virtual ~FileSource();
+    void createWatcher();
     int readRack(std::string filename);
     virtual json_t* readJson(std::string filePath);
     virtual std::vector<std::string> filterFiles(std::vector<std::string>& files);

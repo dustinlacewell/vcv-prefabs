@@ -1,6 +1,7 @@
 #include <rack.hpp>
 
 #include "State.hpp"
+#include "sources/UserQueryCache.hpp"
 #include "sources/UserStorageSource.hpp"
 #include "utils/logging.hpp"
 
@@ -155,9 +156,14 @@ void State::fromJson(json_t* rootJ)
     }
 }
 
-void State::refresh()
+void State::reload()
 {
     store.load();
+}
+
+void State::refresh()
+{
+    store.refresh();
 }
 
 void State::save()
@@ -207,6 +213,7 @@ void State::load()
         auto slug = std::get<0>(extraSource);
         auto root = std::get<1>(extraSource);
         auto prefabSource = new FileSource(slug, root);
+        prefabSource->createWatcher();
         DINFO("[Prefabs] Adding extra prefab source %s", root.c_str());
         store.addPrefabSource(prefabSource);
     }
@@ -215,11 +222,25 @@ void State::load()
         auto slug = std::get<0>(extraSource);
         auto root = std::get<1>(extraSource);
         auto patchSource = new ArchiveSource(slug, root);
+        patchSource->createWatcher();
         DINFO("[Prefabs] Adding extra patch source %s", root.c_str());
         store.addPatchSource(patchSource);
     }
 
-    store.addPatchSource(new UserStorageSource(storageUsername, storagePassword, storageUsers));
+    auto patchSource = new ArchiveSource("Patch Storage", asset::user("patch-storage").c_str());
+    patchSource->createWatcher();
+    store.addPatchSource(patchSource);
+
+    auto client = StorageClient(storageUsername, storagePassword);
+    client.login();
+
+    for (auto user : storageUsers) {
+        auto slug = std::get<0>(user);
+        auto id = std::get<1>(user);
+        auto cache = new UserQueryCache(slug, id, client);
+        QINFO("[Prefabs] Adding storage source %s", slug.c_str());
+        store.addUserQueryCache(cache);
+    }
 
     DINFO("[Prefabs] Loaded Settings from %s", path.c_str());
 }

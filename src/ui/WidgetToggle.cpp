@@ -14,7 +14,7 @@ WidgetToggle::WidgetToggle(Prefabs* module)
         latchCallback = [=]() {
             if (module->widget) {
                 module->widget->state->showing = true;
-                module->widget->state->refresh();
+                module->widget->state->reload();
             }
         };
 

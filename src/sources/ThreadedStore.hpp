@@ -8,6 +8,7 @@
 #include <plugin.hpp>
 #include <rack.hpp>
 #include "ArchiveSource.hpp"
+#include "UserQueryCache.hpp"
 
 using namespace rack;
 
@@ -22,6 +23,7 @@ extern int refreshing;
 struct ThreadedStore {
     std::vector<FileSource*> prefabSources;
     std::vector<ArchiveSource*> patchSources;
+    std::vector<UserQueryCache*> userQueryCaches;
 
     int getTotalPrefabs();
     int getTotalPatches();
@@ -32,4 +34,6 @@ struct ThreadedStore {
 
     void addPrefabSource(FileSource* source);
     void addPatchSource(ArchiveSource* source);
+    void addUserQueryCache(UserQueryCache* cache);
+    void refresh();
 };

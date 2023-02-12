@@ -56,22 +56,28 @@ bool StorageClient::login()
     return true;
 }
 
-std::vector<PatchResult> StorageClient::fetchUserPatches(int authorId)
+std::vector<PatchResult> StorageClient::fetchUserPatches(int authorId, int count)
 {
     CINFO("StorageClient::fetchUserPatches() authorId: %d", authorId);
 
     auto request = makeRequest("/patches");
     request.method = "GET";
-    request.params["authors"] = network::encodeUrl(std::to_string(authorId));
+    request.params["author"] = std::to_string(authorId);
     request.params["platforms"] = "745";
     request.params["per_page"] = "100";
+    request.params["orderby"] = "date";
+    request.params["order"] = "asc";
+
+    if (count > 0) {
+        request.params["offset"] = std::to_string(count);
+    }
 
     auto _resp = request.send();
 
     // dump _resp.body to string from json
-    std::string str = json_dumps(_resp.body, 0);
-    CINFO("StorageClient::fetchUserPatches() _resp.body:");
-    CINFO(str.c_str());
+    //    std::string str = json_dumps(_resp.body, 0);
+    //    CINFO("StorageClient::fetchUserPatches() _resp.body:");
+    //    CINFO(str.c_str());
 
     auto resp = SearchResponse(_resp.body);
 
@@ -85,15 +91,36 @@ std::vector<PatchResult> StorageClient::fetchUserPatches(int authorId)
         return {};
     }
 
+    if (resp.patches.size() == 100) {
+        // recurse
+        auto morePatches = fetchUserPatches(authorId, count + 100);
+        resp.patches.insert(resp.patches.end(), morePatches.begin(), morePatches.end());
+    }
+
     return resp.patches;
 }
 
-std::optional<PatchInfo> StorageClient::fetchPatchInfo(int patchId)
+std::optional<NewPatchInfo> StorageClient::fetchPatchInfo(int patchId)
 {
     CINFO("StorageClient::fetchPatchInfo() patchId: %d", patchId);
 
     auto request = makeRequest("/patches/" + std::to_string(patchId));
     auto _resp = request.send();
+
+    if (_resp.json_error.line != -1) {
+        CINFO("StorageClient::fetchPatchInfo() error: %d %s", _resp.json_error.line, _resp.json_error.text);
+        return {};
+    }
+
+    if (!_resp.body) {
+        CINFO("StorageClient::fetchPatchInfo() _resp.body missing");
+        return {};
+    }
+
+    //    auto dumped = json_dumps(_resp.body, 0);
+    //    CINFO("StorageClient::fetchPatchInfo() _resp.body:");
+    //    CINFO(dumped);
+
     auto resp = PatchInfoResponse(_resp.body);
 
     if (resp.code == "empty_response") {
@@ -130,7 +157,7 @@ bool StorageClient::downloadPatch(std::string url, std::string path) const
     // system::createDirectory does not create intermediate directories
     // we must start at the root and create each directory in the path
 
-    std::string dir = "";
+    std::string dir = "";  // TODO: use system::createDirectories
     for (auto& part : string::split(parentDir, "/")) {
         dir += part + "/";
         system::createDirectory(dir);

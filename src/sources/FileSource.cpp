@@ -61,21 +61,28 @@ static void watchCallback(efsw_watcher watcher,
         auto watcherEvent = eventString(action);
 
         if (watcherEvent == "MODIFIED") {
-            that->readRack(std::string(dir) + "/" + filename);
+            SINFO("PATCH MODIFIED: %s", fullPath.c_str());
+            that->readRack(fullPath);
         }
     }
 }
 
-FileSource::FileSource(std::string slug, std::string path) : Source(), slug(slug), path(path)
+void FileSource::createWatcher()
 {
+    SINFO("Creating patch watcher for %s", path.c_str());
     watcher = efsw_create(false);
     efsw_addwatch(watcher, path.c_str(), watchCallback, true, this);
     efsw_watch(watcher);
 }
 
+FileSource::FileSource(std::string slug, std::string path) : Source(), slug(slug), path(path)
+{
+    createWatcher();
+}
+
 FileSource::~FileSource()
 {
-    if (watcher) {
+    if (watcher != nullptr) {
         efsw_release(watcher);
         watcher = NULL;
     }

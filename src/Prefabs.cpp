@@ -53,7 +53,7 @@ void Prefabs::process(const ProcessArgs& args)
             locked = true;
 
             widget = new IconWidget();
-            widget->state->refresh();
+            widget->state->reload();
             APP->scene->addChildBelow(widget, APP->scene->browser);
             enableBrowserMode();
             locked = false;
