@@ -165,20 +165,20 @@ bool StorageClient::downloadPatch(std::string url, std::string path) const
 
     auto resp = request.send();
 
-    if (resp.status != 200) {
-        CINFO("StorageClient::downloadPatch() error: %d", resp.status);
-        return false;
-    }
-
-    // if the file was a .zip, decompress it
-    if (string::endsWith(request.filename, ".zip")) {
-        auto zipPath = request.filename;
-        auto dirPath = request.filename.substr(0, path.find_last_of("/"));
-        system::createDirectory(dirPath);
-        system::unarchiveToDirectory(zipPath, dirPath);
-        // delete file with non-system:: functions
-        std::remove(zipPath.c_str());
-    }
+    //    if (resp.status != 200) {
+    //        CINFO("StorageClient::downloadPatch() error: %d", resp.status);
+    //        return false;
+    //    }
+    //
+    //    // if the file was a .zip, decompress it
+    //    if (string::endsWith(request.filename, ".zip")) {
+    //        auto zipPath = request.filename;
+    //        auto dirPath = request.filename.substr(0, path.find_last_of("/"));
+    //        system::createDirectory(dirPath);
+    //        system::unarchiveToDirectory(zipPath, dirPath);
+    //        // delete file with non-system:: functions
+    //        std::remove(zipPath.c_str());
+    //    }
 
     return true;
 }

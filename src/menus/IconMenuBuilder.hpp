@@ -31,7 +31,18 @@ struct IconMenuBuilder {
     Menu* menu;
     SearchBox* searchBox;
 
-    IconMenuBuilder(State* state) : state(state) { modules = ModuleIndex(state); }
+    RackSearcher patchResults;
+
+    IconMenuBuilder(State* state) : state(state)
+    {
+        modules = ModuleIndex(state);
+
+        patchResults.candidateCallback = [this]() {
+            auto racks = this->state->patchesIndex.racks;
+            racks.insert(this->state->storageIndex.racks.begin(), this->state->storageIndex.racks.end());
+            return racks;
+        };
+    }
 
     ModularMenuSeparator* createSeparator() const
     {
@@ -56,8 +67,11 @@ struct IconMenuBuilder {
 
     void createSearchBox()
     {
+
         searchBox = new SearchBox([this](std::string text) {
             modules.results.clear();
+
+            patchResults.setQuery(text);
 
             if (text == "") {
                 return;
@@ -124,36 +138,42 @@ struct IconMenuBuilder {
             return searchBox->text != "";
         };
 
-        auto& localSource = state->patchesIndex.sources["local"];
-        for (const auto& rack : localSource.racks) {
-            auto item = new RackItem(state, rack);
-            item->source = "local";
-            item->visibleCallback = [this, rack]() {
-                bool nonEmpty = this->searchBox->text != "";
-                bool found = rack.name.find(this->searchBox->text) != std::string::npos;
-                return nonEmpty && found;
+        auto ctrlWasPressed = modPressed(GLFW_MOD_CONTROL);
+
+        // create 15 local patch results
+        for (int i = 0; i < 15; i++) {
+            auto item = new RackItem(state);
+            item->visibleCallback = [this, item, i, ctrlWasPressed]() {
+                // if i >= results.size, then return false
+                if (i >= patchResults.results.size()) {
+                    item->unsetRack();
+                    return false;
+                }
+
+                // if search box is empty, return false
+                if (this->searchBox->text == "") {
+                    item->unsetRack();
+                    return false;
+                }
+
+                auto& result = patchResults.results[i];
+
+                if (!result.isValid && !ctrlWasPressed) {
+                    item->unsetRack();
+                    return false;
+                }
+
+                item->setRack(result);
+                item->rightText = result.group;
+
+                if (result.metadata.has_value()) {
+                    auto author = result.metadata->author.name;
+                    item->rightText = result.isValid ? author : author + "!";
+                }
+
+                return true;
             };
             menu->addChild(item);
-        }
-
-        for (const auto& sourcePair : state->patchesIndex.sources) {
-            auto slug = sourcePair.first;
-            auto source = sourcePair.second;
-
-            if (slug == "local") {
-                continue;
-            }
-
-            for (const auto& rack : source.racks) {
-                auto item = new RackItem(state, rack);
-                item->source = slug;
-                item->visibleCallback = [this, rack]() {
-                    bool nonEmpty = this->searchBox->text != "";
-                    bool found = rack.name.find(this->searchBox->text) != std::string::npos;
-                    return nonEmpty && found;
-                };
-                menu->addChild(item);
-            }
         }
     }
 
@@ -453,36 +473,28 @@ struct IconMenuBuilder {
         return title;
     }
 
-    auto createStoragePatchSourceMenu(const SourceIndex source) const
+    auto createStoragePatchSourceMenu(const UserIndex user) const
     {
-        if (source.racks.empty()) {
+        if (user.racks.empty()) {
             return std::vector<Widget*>{};
         }
 
         std::vector<Widget*> widgets = {};
 
         // tagged
-        for (auto& [groupName, racks] : source.groups) {
-            int nonBroken = 0;
-
-            for (auto rack : racks) {
-                if (rack.isValid) {
-                    nonBroken++;
-                }
-            }
-
-            if (nonBroken == 0 && !modPressed(RACK_MOD_CTRL))
+        for (auto& rack : user.sortedRacks) {
+            if (!rack.isValid && !modPressed(RACK_MOD_CTRL))
                 continue;
 
-            auto tag = new GroupItem(state, groupName, racks);
-            tag->rightText = nonBroken == 0 ? "!" : RIGHT_ARROW;
-            widgets.push_back(tag);
+            auto item = new RackItem(state, rack);
+            item->rightText = rack.isValid ? "" : "!";
+            widgets.push_back(item);
         }
 
         // by module
         auto pluginsItem = new ModularMenuItem();
         pluginsItem->text = "by module:";
-        pluginsItem->childMenuCallback = [this, plugins = source.plugins](ModularMenuItem* item, Menu* subMenu) {
+        pluginsItem->childMenuCallback = [this, plugins = user.plugins](ModularMenuItem* item, Menu* subMenu) {
             for (auto [pluginName, pluginModules] : plugins) {
                 auto pluginItem = new PluginItem(this->state, pluginName, pluginModules);
                 if (!pluginItem->disabled) {
@@ -497,7 +509,7 @@ struct IconMenuBuilder {
 
     void createStoragePatchItems() const
     {
-        for (const auto& source : state->storageIndex.sources) {
+        for (const auto& source : state->storageIndex.users) {
             const auto& sourceName = source.first;
             const auto& sourceIndex = source.second;
 

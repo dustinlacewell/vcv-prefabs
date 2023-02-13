@@ -1,6 +1,7 @@
 #include <ghc/filesystem.hpp>
 
 #include "QueryCache.hpp"
+#include "utils/patches.hpp"
 
 using namespace rack;
 
@@ -11,8 +12,7 @@ std::string QueryCache::getCacheFilename()
 
 std::string QueryCache::getPatchFilename(NewPatchInfo patchInfo, PatchFile fileInfo)
 {
-    auto root = asset::user("patch-storage/" + patchInfo.author.slug + "/" + patchInfo.slug);
-    return root + "/" + fileInfo.filename;
+    return asset::user("patch-storage/" + patchInfo.author.slug + "/" + patchInfo.slug + ".vcv");
 }
 
 json_t* QueryCache::readCacheFile()
@@ -134,6 +134,49 @@ void QueryCache::downloadPatch(NewPatchInfo patchInfo)
     }
 }
 
+bool QueryCache::updateMetadata(NewPatchInfo patchInfo, std::string patchFile)
+{
+    auto inFile = fopen(patchFile.c_str(), "r");
+
+    if (!inFile) {
+        DINFO("[Prefabs] When loading patch inFile, could not open %s", patchFile.c_str());
+        return false;
+    }
+
+    json_error_t error;
+    json_t* rootJ = json_loadf(inFile, 0, &error);
+
+    fclose(inFile);
+
+    if (!rootJ) {
+        DINFO("[Prefabs] Failed to load patch file. JSON parsing error at %s %d:%d %s",
+            error.source,
+            error.line,
+            error.column,
+            error.text);
+        return false;
+    }
+
+    json_object_set_new(rootJ, "metadata", patchInfo.toJson());
+
+    auto outFile = fopen(patchFile.c_str(), "w");
+    json_dumpf(rootJ, outFile, JSON_INDENT(2) | JSON_REAL_PRECISION(9));
+    fclose(outFile);
+    json_decref(rootJ);
+
+    return true;
+}
+
+bool QueryCache::updateArchive(NewPatchInfo patchInfo, std::string archiveFile, std::string destinationFile)
+{
+    auto archiveFolder = archiveFile + "-unpacked";
+    system::unarchiveToDirectory(archiveFile, archiveFolder);
+    auto patchPath = archiveFolder + "/patch.json";
+    updateMetadata(patchInfo, patchPath);
+    system::archiveDirectory(archiveFile, archiveFolder, 1);
+    system::removeRecursively(archiveFolder);
+}
+
 void QueryCache::downloadFile(NewPatchInfo patchInfo, PatchFile fileInfo)
 {
     auto path = this->getPatchFilename(patchInfo, fileInfo);
@@ -142,54 +185,34 @@ void QueryCache::downloadFile(NewPatchInfo patchInfo, PatchFile fileInfo)
         return;
     }
 
-    auto rootTempPath = asset::user("prefabs/staging/");
-    system::createDirectories(rootTempPath);
+    auto stagingPath = asset::user("prefabs/staging/");
+    system::createDirectories(stagingPath);
 
-    // create a random filename
-    // no function for it, just generate a random string using abcdefghijklmnopqrstuvwxyz
     std::string randomFilename = "";
     for (int i = 0; i < 10; i++) {
         randomFilename += (char)('a' + (rand() % 26));
     }
 
-    auto tempPath = rootTempPath + randomFilename;
+    auto tempPath = stagingPath + randomFilename;
 
-    this->client.downloadPatch(fileInfo.url, tempPath);
-
-    // add patchInfo as metadata to the patch json file
-    // load path as json
-
-    FILE* file = fopen(tempPath.c_str(), "r");
-    if (!file) {
-        DINFO("[Prefabs] When loading patch file, could not open %s", tempPath.c_str());
+    if (!this->client.downloadPatch(fileInfo.url, tempPath)) {
+        DINFO("[Prefabs] Failed to download patch %s", fileInfo.url.c_str());
         return;
     }
 
-    json_error_t error;
-    json_t* rootJ = json_loadf(file, 0, &error);
+    bool isLegacy = isPatchLegacyV1(tempPath);
 
-    fclose(file);
-
-    if (!rootJ) {
-        DINFO("[Prefabs] Failed to load patch file. JSON parsing error at %s %d:%d %s",
-            error.source,
-            error.line,
-            error.column,
-            error.text);
+    if (!isLegacy) {
+        updateArchive(patchInfo, tempPath, path);
     }
     else {
-        json_object_set_new(rootJ, "metadata", patchInfo.toJson());
-
-        file = fopen(tempPath.c_str(), "w");
-        json_dumpf(rootJ, file, JSON_INDENT(2) | JSON_REAL_PRECISION(9));
-        fclose(file);
-        json_decref(rootJ);
+        updateMetadata(patchInfo, tempPath);
     }
 
-    // move tempPath to path
-    DINFO("Copying %s to %s", tempPath.c_str(), path.c_str());
     auto dirname = system::getDirectory(path);
     system::createDirectories(dirname);
+
+    DINFO("Copying %s to %s", tempPath.c_str(), path.c_str());
     system::copy(tempPath, path);
     system::remove(tempPath);
 }

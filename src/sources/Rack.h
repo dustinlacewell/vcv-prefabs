@@ -33,7 +33,7 @@ struct Rack {
     std::string missingReport();
 
     void fromJson(json_t* rootJ);
-    std::string getDisplayName();
+    std::string getDisplayName() const;
 };
 
 bool operator<(const Rack& lhs, const Rack& rhs);

@@ -228,6 +228,9 @@ void State::load()
     auto client = StorageClient(storageUsername, storagePassword);
     client.login();
 
+    auto patchSource = new UserStorageSource("patch-storage", asset::user("patch-storage/").c_str());
+    store.addStorageSource(patchSource);
+
     for (auto user : storageUsers) {
         auto slug = std::get<0>(user);
         auto id = std::get<1>(user);
@@ -235,9 +238,6 @@ void State::load()
         auto cache = new UserQueryCache(slug, id, client);
         QINFO("[Prefabs] Adding storage source %s", slug.c_str());
         store.addUserQueryCache(cache);
-
-        auto patchSource = new UserStorageSource(slug, asset::user("patch-storage/" + slug).c_str());
-        store.addStorageSource(patchSource);
     }
 
     DINFO("[Prefabs] Loaded Settings from %s", path.c_str());

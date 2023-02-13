@@ -97,10 +97,13 @@ void Rack::fromJson(json_t* rootJ)
     }
 }
 
-std::string Rack::getDisplayName()
+std::string Rack::getDisplayName() const
 {
     if (this->displayName.has_value()) {
         return *(this->displayName);
+    }
+    else if (this->metadata.has_value()) {
+        return this->metadata->title;
     }
     return this->name;
 }

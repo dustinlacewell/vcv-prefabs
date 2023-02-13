@@ -7,13 +7,13 @@ using namespace rack;
 #include "menus/ModularMenuItem.hpp"
 #include "models/State.hpp"
 
-struct RackItem : ModularMenuItem
-{
+struct RackItem : ModularMenuItem {
     State* state;
-    Rack rack;
+    std::optional<Rack> rack;
     Tooltip* tooltip;
     std::string source;
 
+    RackItem(State* module);
     RackItem(State* module, Rack rack);
     void onButton(const event::Button& e) override;
     void onHover(const event::Hover& e) override;
@@ -21,4 +21,6 @@ struct RackItem : ModularMenuItem
     void onLeave(const event::Leave& e) override;
     void step() override;
     void draw(const DrawArgs& args) override;
+    void setRack(Rack rack);
+    void unsetRack();
 };

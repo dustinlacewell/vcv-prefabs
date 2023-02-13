@@ -3,6 +3,7 @@
 #include <rack.hpp>
 
 #include "index/Index.hpp"
+#include "index/StorageIndex.hpp"
 #include "models/ModuleSorter.hpp"
 #include "models/ModuleTagManager.hpp"
 #include "models/SimpleQuantity.hpp"
@@ -27,7 +28,7 @@ struct State {
 
     Index prefabsIndex;
     Index patchesIndex;
-    Index storageIndex;
+    StorageIndex storageIndex;
 
     SimpleQuantity searchResultsQuantity;
     SimpleQuantity colorQuantity;
