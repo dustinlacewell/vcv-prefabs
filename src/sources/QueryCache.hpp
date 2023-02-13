@@ -27,4 +27,6 @@ struct QueryCache {
     void downloadFile(NewPatchInfo patchInfo, PatchFile fileInfo);
     void downloadPatch(NewPatchInfo patchInfo);
     void refresh();
+    bool updateMetadata(NewPatchInfo patchInfo, std::string patchFile);
+    bool updateArchive(NewPatchInfo patchInfo, std::string archiveFile, std::string destinationFile);
 };
