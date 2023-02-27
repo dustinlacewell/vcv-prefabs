@@ -12,13 +12,15 @@ include_directories(src)
 include_directories(efsw/include)
 include_directories(efsw/src)
 include_directories(date/include)
+include_directories(vcv-svghelper/include)
 
 include(RackSDK.cmake)
 
 file(GLOB_RECURSE SOURCE_FILES "src/*.cpp")
 file(GLOB_RECURSE EFSW_SOURCES "efsw/src/efsw/*.cpp")
+file(GLOB_RECURSE SVGHELPER_SOURCES "vcv-svghelper/src/*.cpp")
 
-target_sources(${RACK_PLUGIN_LIB} PRIVATE ${SOURCE_FILES} ${EFSW_SOURCES})
+target_sources(${RACK_PLUGIN_LIB} PRIVATE ${SOURCE_FILES} ${EFSW_SOURCES} ${SVGHELPER_SOURCES})
 
 message(STATUS "CMAKE_OSX_DEPLOYMENT_TARGET: ${CMAKE_OSX_DEPLOYMENT_TARGET}")
 

@@ -1,10 +1,10 @@
 #pragma once
 
 #include <rack.hpp>
+#include "ModularWidget.hpp"
 
 using namespace rack;
 
-struct VerticalGroup : Widget
-{
+struct VerticalGroup : ModularWidget {
     void step() override;
 };

@@ -6,7 +6,7 @@ Language: Cpp
 BasedOnStyle: Google
 AccessModifierOffset: -1
 AlignAfterOpenBracket: false
-AlignConsecutiveAssignments: None
+AlignConsecutiveAssignments: false
 AlignOperands: Align
 AllowAllArgumentsOnNextLine: true
 AllowAllConstructorInitializersOnNextLine: true
@@ -21,7 +21,7 @@ AlwaysBreakAfterReturnType: None
 AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: false
 BinPackParameters: false
-BreakBeforeBraces: Custom
+BreakBeforeBraces: Attach
 BraceWrapping:
   AfterCaseLabel: false
   AfterClass: false

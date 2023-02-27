@@ -1,21 +1,24 @@
 #include "LedLabel.hpp"
+#include "utils/drawing.hpp"
 
-void LedLabel::draw(const DrawArgs& args)
-{
-    // draw the text
-    auto fontPath = asset::system("res/fonts/ShareTechMono-Regular.ttf");
-    std::shared_ptr<window::Font> font = APP->window->loadFont(fontPath);
-    if (font && font->handle >= 0) {
-        nvgFillColor(args.vg, color);
-        nvgFontFaceId(args.vg, font->handle);
-        nvgTextLetterSpacing(args.vg, 0.0);
+LedLabel::LedLabel() {
+    textColor = nvgRGB(0xff, 0xd7, 0x14);
+    backgroundColor = nvgRGB(0xc8, 0xc8, 0xc8);
+    fontSize = 12;
+    fontPath = asset::system("res/fonts/ShareTechMono-Regular.ttf");
+    letterSpacing = 0.f;
+    textOffset = Vec(0, 0);
+    alignment = NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE;
+}
 
-        // text is positioned from the bottom left
-        // center it vertically in the box.size.y by it's height
-        float textHeight = fontSize * 1.2;
-        float textY = (box.size.y - textHeight) / 2.0;
-        nvgTextAlign(args.vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
-        nvgFontSize(args.vg, fontSize);
-        nvgText(args.vg, box.size.x / 2, box.size.y / 2, text.c_str(), NULL);
-    }
+void LedLabel::draw(const DrawArgs& args) {
+    ModularWidget::draw(args);
+
+    withFont(args, fontPath, fontSize, alignment, [&](std::shared_ptr<Font> font) {
+        withClip(args, box, [&] {
+            nvgFillColor(args.vg, textColor);
+            nvgTextLetterSpacing(args.vg, letterSpacing);
+            nvgText(args.vg, box.size.x / 2 + textOffset.x, box.size.y / 2 + textOffset.y, text.c_str(), NULL);
+        });
+    });
 }

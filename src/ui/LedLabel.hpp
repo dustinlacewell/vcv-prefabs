@@ -5,11 +5,18 @@
 
 using namespace rack;
 
-struct LedLabel : ModularWidget
-{
-    int fontSize = 12;
+struct LedLabel : ModularWidget {
     std::string text;
-    NVGcolor color = nvgRGB(0xff, 0xd7, 0x14);
+    std::string fontPath = "res/fonts/RobotoMono-Bold.ttf";
+    float fontSize;
+    float letterSpacing;
+    int alignment;
+    Vec textOffset;
+    NVGcolor defaultTextColor;
+    NVGcolor textColor;  // This can be used to temporarily override text color
+    NVGcolor backgroundColor;
 
-    void draw(const DrawArgs& args) override;
+    LedLabel();
+
+    virtual void draw(const DrawArgs& args) override;
 };

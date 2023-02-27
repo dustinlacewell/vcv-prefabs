@@ -20,6 +20,14 @@
       "tags": [
         "utility"
       ]
+    },
+    {
+      "slug": "Facade",
+      "name": "Facade",
+      "description": "Simple labeled passthrough.",
+      "tags": [
+        "utility"
+      ]
     }
   ]
 }
