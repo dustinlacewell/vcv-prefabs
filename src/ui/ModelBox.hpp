@@ -4,20 +4,17 @@
 
 using namespace rack;
 
-struct ModuleWidgetContainer : widget::Widget
-{
-    void draw(const DrawArgs& args) override
-    {
+struct ModuleWidgetContainer : widget::Widget {
+    void draw(const DrawArgs& args) override {
         Widget::draw(args);
         Widget::drawLayer(args, 1);
     }
 };
 
-struct ModelBox : widget::OpaqueWidget
-{
+struct ModelBox : widget::Widget {
     plugin::Model* model;
     ui::Tooltip* tooltip = NULL;
-    // Lazily created widgets
+    // Lazily created panels
     widget::Widget* previewWidget = NULL;
     widget::ZoomWidget* zoomWidget = NULL;
     widget::FramebufferWidget* fb = NULL;
@@ -45,7 +42,7 @@ struct ModelBox : widget::OpaqueWidget
 
     //    ui::Tooltip* createTooltip();
 
-    //    void onEnter(const EnterEvent& e) override;
+    //    void handleEnter(const EnterEvent& e) override;
     //
     //    void onLeave(const LeaveEvent& e) override;
 

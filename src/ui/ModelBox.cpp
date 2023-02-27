@@ -66,12 +66,13 @@ void ModelBox::draw(const DrawArgs& args)
     float b = math::clamp(settings::rackBrightness + 0.2f, 0.f, 1.f);
     nvgGlobalTint(args.vg, nvgRGBAf(b, b, b, 1));
 
-    OpaqueWidget::draw(args);
+    Widget::draw(args);
 }
 
 void ModelBox::step()
 {
-    OpaqueWidget::step();
+    Widget::step();
+    box = box.nudge(APP->scene->rack->box.zeroPos());
 }
 
 void ModelBox::onHoverKey(const HoverKeyEvent& e)
@@ -85,10 +86,10 @@ void ModelBox::onHoverKey(const HoverKeyEvent& e)
 
     if (e.isConsumed())
         return;
-    OpaqueWidget::onHoverKey(e);
+    Widget::onHoverKey(e);
 }
 
 void ModelBox::onHide(const HideEvent& e)
 {
-    OpaqueWidget::onHide(e);
+    Widget::onHide(e);
 }
