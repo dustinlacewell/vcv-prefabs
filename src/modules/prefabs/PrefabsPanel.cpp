@@ -8,7 +8,8 @@
 #include "modules/prefabs/ui/IconWidget.hpp"
 #include "ui/menus/ModularMenuItem.hpp"
 
-PrefabsPanel::PrefabsPanel(Prefabs* module) : PanelWidget<Prefabs>(module, "res/Prefabs.svg") {
+PrefabsPanel::PrefabsPanel(Prefabs* module)
+    : PanelWidget<Prefabs>(module, asset::plugin(pluginInstance, "res/Prefabs.svg")) {
     makeLight("refresh_light", "Lit when refreshing", Prefabs::REFRESH_LIGHT);
     makeToggle(
         "toggle_button",

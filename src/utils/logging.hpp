@@ -1,55 +1,51 @@
+#pragma once
+
 #include <rack.hpp>
 
-#define DINFO(format, ...)                            \
-    if (rack::settings::devMode)                      \
-    rack::logger::log(rack::logger::INFO_LEVEL,       \
-        __FILE__,                                     \
-        __LINE__,                                     \
-        __FUNCTION__,                                 \
-        ("[Prefabs]:" + std::string(format)).c_str(), \
-        ##__VA_ARGS__)
-
+#define CACHE_DEBUGGING
 #define SOURCE_DEBUGGING
 
-#ifdef SOURCE_DEBUGGING
-#define SINFO(format, ...)                                        \
-    if (rack::settings::devMode)                                  \
-    rack::logger::log(rack::logger::INFO_LEVEL,                   \
-        __FILE__,                                                 \
-        __LINE__,                                                 \
-        __FUNCTION__,                                             \
-        ("[Prefabs]: (Sources): " + std::string(format)).c_str(), \
-        ##__VA_ARGS__)
-#else
-#define SINFO(format, ...)
-#endif
+static inline auto print_helper(auto const& t) {
+    return t;
+}
 
-#define CLIENT_DEBUGGING
+static inline auto print_helper(std::string const& s) {
+    return s.c_str();
+}
 
-#ifdef CLIENT_DEBUGGING
-#define CINFO(format, ...)                                        \
-    if (rack::settings::devMode)                                  \
-    rack::logger::log(rack::logger::INFO_LEVEL,                   \
-        __FILE__,                                                 \
-        __LINE__,                                                 \
-        __FUNCTION__,                                             \
-        ("[Prefabs]: (Sources): " + std::string(format)).c_str(), \
-        ##__VA_ARGS__)
-#else
-#define SINFO(format, ...)
-#endif
+template <class... Args>
+void dprint(char const* fmt, Args&&... args) {
+    if (rack::settings::devMode) {
+        printf(fmt, print_helper(args)...);
+    }
+}
 
-#define CACHE_DEBUGGING
-
+template <typename... Args>
+void CINFO(const char* s, const Args&... args) {
 #ifdef CACHE_DEBUGGING
-#define QINFO(format, ...)                                        \
-    if (rack::settings::devMode)                                  \
-    rack::logger::log(rack::logger::INFO_LEVEL,                   \
-        __FILE__,                                                 \
-        __LINE__,                                                 \
-        __FUNCTION__,                                             \
-        ("[Prefabs]: (Sources): " + std::string(format)).c_str(), \
-        ##__VA_ARGS__)
-#else
-#define SINFO(format, ...)
+    std::string formatStr = "[Prefabs]: (Cache): " + std::string(s) + "\n";
+    dprint(formatStr.c_str(), args...);
 #endif
+}
+
+template <typename... Args>
+void DINFO(const char* format, const Args&... args) {
+    std::string formatStr = "[Prefabs]: " + std::string(format) + "\n";
+    dprint(formatStr.c_str(), args...);
+}
+
+template <typename... Args>
+void SINFO(const char* format, const Args&... args) {
+#ifdef SOURCE_DEBUGGING
+    std::string formatStr = "[Prefabs]: (Source): " + std::string(format) + "\n";
+    dprint(formatStr.c_str(), args...);
+#endif
+}
+
+template <typename... Args>
+void QINFO(const char* format, const Args&... args) {
+#ifdef QUERY_DEBUGGING
+    std::string formatStr = "[Prefabs]: (Query): " + std::string(format) + "\n";
+    dprint(formatStr.c_str(), args...);
+#endif
+}

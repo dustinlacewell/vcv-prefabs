@@ -9,8 +9,7 @@ struct PatchResult {
     std::string slug;
     std::string title;
 
-    PatchResult(json_t* itemJ)
-    {
+    PatchResult(json_t* itemJ) {
         // check for id
         auto idJ = json_object_get(itemJ, "id");
         if (idJ) {
@@ -43,8 +42,7 @@ struct SearchResponse {
     std::string code;
     std::string message;
 
-    SearchResponse(json_t* responseJ)
-    {
+    SearchResponse(json_t* responseJ) {
         if (responseJ == NULL) {
             code = "empty_response";
             message = "Empty response.";
@@ -66,7 +64,7 @@ struct SearchResponse {
         }
 
         CINFO("itemsJ: %d", json_array_size(responseJ));
-        for (int i = 0; i < json_array_size(responseJ); i++) {
+        for (unsigned int i = 0; i < json_array_size(responseJ); i++) {
             auto itemJ = json_array_get(responseJ, i);
             if (itemJ) {
                 PatchResult patchResult(itemJ);

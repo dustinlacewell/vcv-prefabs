@@ -7,12 +7,11 @@
 #include "ui/LightLatch.hpp"
 
 template <typename T>
-struct PanelWidget : ModuleWidget {
-    SvgHelper helper;
+struct PanelWidget : ModuleWidget, SvgHelper<PanelWidget<T>> {
 
-    PanelWidget(T* module, std::string filename) : helper(SvgHelper(asset::plugin(pluginInstance, filename))) {
+    PanelWidget(Module* module, std::string filename) {
         setModule(module);
-        setPanel(createPanel(asset::plugin(pluginInstance, filename)));
+        this->loadPanel(asset::plugin(pluginInstance, filename));
     }
 
     Tooltip* makeTooltip(std::string tooltipText) {
@@ -26,7 +25,7 @@ struct PanelWidget : ModuleWidget {
     };
 
     std::optional<LedLabel*> makeLabel(std::string name, std::string tooltipText) {
-        auto position = helper.findNamed(name);
+        auto position = this->findNamed(name);
 
         if (!position.has_value()) {
             return std::nullopt;
@@ -40,20 +39,20 @@ struct PanelWidget : ModuleWidget {
             return makeTooltip(tooltipText);
         };
 
-        centerWidget(label, mm2px(*position));
+        centerWidget(label, *position);
         addChild(label);
         return label;
     }
 
     std::optional<Widget*> makeLight(std::string name, std::string tooltipText, int lightId) {
-        auto position = helper.findNamed(name);
+        auto position = this->findNamed(name);
 
         if (!position.has_value()) {
             return std::nullopt;
         }
 
         auto light = createLightCentered<SmallLight<YellowLight>>(mm2px(Vec(7.5, 43)), module, lightId);
-        centerWidget(light, mm2px(*position));
+        centerWidget(light, *position);
         addChild(light);
 
         return light;
@@ -64,7 +63,7 @@ struct PanelWidget : ModuleWidget {
         std::function<bool()> stateCallback,
         std::function<void()> latchCallback,
         std::function<void()> unlatchCallback) {
-        auto position = helper.findNamed(name);
+        auto position = this->findNamed(name);
 
         if (!position.has_value()) {
             return std::nullopt;
@@ -77,7 +76,7 @@ struct PanelWidget : ModuleWidget {
         toggle->isLatched = stateCallback;
         toggle->latchCallback = latchCallback;
         toggle->unlatchCallback = unlatchCallback;
-        centerWidget(toggle, mm2px(*position));
+        centerWidget(toggle, *position);
         addChild(toggle);
 
         return toggle;

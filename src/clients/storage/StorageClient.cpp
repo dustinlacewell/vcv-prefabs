@@ -1,6 +1,6 @@
 #include "StorageClient.hpp"
 
-#include "HttpClient.hpp"
+#include "clients/HttpClient.hpp"
 #include "plugin.h"
 #include "responses/PatchInfoResponse.hpp"
 #include "responses/TokenResponse.hpp"
@@ -12,8 +12,7 @@ StorageClient::StorageClient(std::string username, std::string password) : usern
 
 StorageClient::~StorageClient() {}
 
-Request StorageClient::makeRequest(std::string endpoint)
-{
+Request StorageClient::makeRequest(std::string endpoint) {
     auto request = Request();
     request.url = "https://patchstorage.com/api/beta" + endpoint;
     request.headers["User-Agent"] = "Rack/Prefabs";
@@ -27,8 +26,7 @@ Request StorageClient::makeRequest(std::string endpoint)
     return request;
 }
 
-bool StorageClient::login()
-{
+bool StorageClient::login() {
     CINFO("StorageClient::login() username: %s, password: %s", username.c_str(), password.c_str());
 
     auto request = makeRequest("/auth/token");
@@ -56,8 +54,7 @@ bool StorageClient::login()
     return true;
 }
 
-std::vector<PatchResult> StorageClient::fetchUserPatches(int authorId, int count)
-{
+std::vector<PatchResult> StorageClient::fetchUserPatches(int authorId, int count) {
     CINFO("StorageClient::fetchUserPatches() authorId: %d", authorId);
 
     auto request = makeRequest("/patches");
@@ -100,8 +97,7 @@ std::vector<PatchResult> StorageClient::fetchUserPatches(int authorId, int count
     return resp.patches;
 }
 
-std::optional<NewPatchInfo> StorageClient::fetchPatchInfo(int patchId)
-{
+std::optional<NewPatchInfo> StorageClient::fetchPatchInfo(int patchId) {
     CINFO("StorageClient::fetchPatchInfo() patchId: %d", patchId);
 
     auto request = makeRequest("/patches/" + std::to_string(patchId));
@@ -136,8 +132,7 @@ std::optional<NewPatchInfo> StorageClient::fetchPatchInfo(int patchId)
     return resp.patchInfo;
 }
 
-bool StorageClient::downloadPatch(std::string url, std::string path) const
-{
+bool StorageClient::downloadPatch(std::string url, std::string path) const {
     if (!token.has_value()) {
         throw std::runtime_error("StorageClient::downloadPatch() token is not set");
     }

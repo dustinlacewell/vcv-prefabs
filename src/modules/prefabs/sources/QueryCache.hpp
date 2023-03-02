@@ -1,6 +1,6 @@
 #pragma once
 
-#include "client/StorageClient.hpp"
+#include "clients/storage/StorageClient.hpp"
 
 typedef std::function<std::vector<NewPatchInfo>(StorageClient, int)> QueryFunc;
 

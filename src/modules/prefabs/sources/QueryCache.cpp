@@ -5,18 +5,15 @@
 
 using namespace rack;
 
-std::string QueryCache::getCacheFilename()
-{
+std::string QueryCache::getCacheFilename() {
     return asset::user("prefabs/" + this->name + ".json");
 }
 
-std::string QueryCache::getPatchFilename(NewPatchInfo patchInfo, PatchFile fileInfo)
-{
+std::string QueryCache::getPatchFilename(NewPatchInfo patchInfo, PatchFile fileInfo) {
     return asset::user("patch-storage/" + patchInfo.author.slug + "/" + patchInfo.slug + ".vcv");
 }
 
-json_t* QueryCache::readCacheFile()
-{
+json_t* QueryCache::readCacheFile() {
     auto cacheFile = this->getCacheFilename();
     if (!system::exists(cacheFile)) {
         return nullptr;
@@ -45,8 +42,7 @@ json_t* QueryCache::readCacheFile()
     return rootJ;
 }
 
-std::vector<NewPatchInfo> QueryCache::loadCache()
-{
+std::vector<NewPatchInfo> QueryCache::loadCache() {
     auto rootJ = this->readCacheFile();
     if (!rootJ) {
         return {};
@@ -64,8 +60,7 @@ std::vector<NewPatchInfo> QueryCache::loadCache()
     return patches;
 }
 
-void QueryCache::saveCache()
-{
+void QueryCache::saveCache() {
     auto path = this->getCacheFilename();
     auto parentPath = system::getDirectory(path);
     system::createDirectories(parentPath);
@@ -91,8 +86,7 @@ void QueryCache::saveCache()
     DINFO("[Prefabs] Saved cache to %s", path.c_str());
 }
 
-std::vector<NewPatchInfo> QueryCache::getNewPatches()
-{
+std::vector<NewPatchInfo> QueryCache::getNewPatches() {
     if (!this->queryFunc) {
         QINFO("No query function set for %s", this->name.c_str());
         return {};
@@ -101,8 +95,7 @@ std::vector<NewPatchInfo> QueryCache::getNewPatches()
     return this->queryFunc(this->client, this->cache.size());
 }
 
-void QueryCache::refresh()
-{
+void QueryCache::refresh() {
     // this calls getNewPatches, and for each new patch, it calls downloadPatch
     auto newPatches = this->getNewPatches();
 
@@ -114,15 +107,13 @@ void QueryCache::refresh()
     this->downloadAll();
 }
 
-void QueryCache::downloadAll()
-{
+void QueryCache::downloadAll() {
     for (auto patch : this->cache) {
         this->downloadPatch(patch);
     }
 }
 
-void QueryCache::downloadPatch(NewPatchInfo patchInfo)
-{
+void QueryCache::downloadPatch(NewPatchInfo patchInfo) {
     for (auto fileInfo : patchInfo.files) {
         auto extension = system::getExtension(fileInfo.filename);
 
@@ -134,8 +125,7 @@ void QueryCache::downloadPatch(NewPatchInfo patchInfo)
     }
 }
 
-bool QueryCache::updateMetadata(NewPatchInfo patchInfo, std::string patchFile)
-{
+bool QueryCache::updateMetadata(NewPatchInfo patchInfo, std::string patchFile) {
     auto inFile = fopen(patchFile.c_str(), "r");
 
     if (!inFile) {
@@ -167,18 +157,17 @@ bool QueryCache::updateMetadata(NewPatchInfo patchInfo, std::string patchFile)
     return true;
 }
 
-bool QueryCache::updateArchive(NewPatchInfo patchInfo, std::string archiveFile, std::string destinationFile)
-{
+bool QueryCache::updateArchive(NewPatchInfo patchInfo, std::string archiveFile, std::string destinationFile) {
     auto archiveFolder = archiveFile + "-unpacked";
     system::unarchiveToDirectory(archiveFile, archiveFolder);
     auto patchPath = archiveFolder + "/patch.json";
     updateMetadata(patchInfo, patchPath);
     system::archiveDirectory(archiveFile, archiveFolder, 1);
     system::removeRecursively(archiveFolder);
+    return true;
 }
 
-void QueryCache::downloadFile(NewPatchInfo patchInfo, PatchFile fileInfo)
-{
+void QueryCache::downloadFile(NewPatchInfo patchInfo, PatchFile fileInfo) {
     auto path = this->getPatchFilename(patchInfo, fileInfo);
 
     if (system::exists(path)) {
@@ -204,8 +193,7 @@ void QueryCache::downloadFile(NewPatchInfo patchInfo, PatchFile fileInfo)
 
     if (!isLegacy) {
         updateArchive(patchInfo, tempPath, path);
-    }
-    else {
+    } else {
         updateMetadata(patchInfo, tempPath);
     }
 
@@ -217,7 +205,6 @@ void QueryCache::downloadFile(NewPatchInfo patchInfo, PatchFile fileInfo)
     system::remove(tempPath);
 }
 
-QueryCache::QueryCache(std::string name, StorageClient client) : name(name), client(client)
-{
+QueryCache::QueryCache(std::string name, StorageClient client) : name(name), client(client) {
     this->cache = this->loadCache();
 }

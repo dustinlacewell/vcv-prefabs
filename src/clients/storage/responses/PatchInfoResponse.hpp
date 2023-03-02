@@ -3,7 +3,7 @@
 #include <optional>
 
 #include <rack.hpp>
-#include "./types/NewPatchInfo.hpp"
+#include "clients/storage/responses/types/NewPatchInfo.hpp"
 
 struct PatchInfoResponse {
     std::optional<NewPatchInfo> patchInfo;

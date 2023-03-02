@@ -2,7 +2,7 @@
 
 #include <optional>
 #include <rack.hpp>
-#include "client/responses/types/NewPatchInfo.hpp"
+#include "clients/storage/responses/types/NewPatchInfo.hpp"
 
 using std::map;
 using std::set;

@@ -1,9 +1,9 @@
 #include <rack.hpp>
 
-#include "HttpClient.hpp"
+#include "clients/HttpClient.hpp"
+#include "clients/typedefs.hpp"
 #include "responses/PatchInfoResponse.hpp"
 #include "responses/SearchResponse.hpp"
-#include "typedefs.hpp"
 
 struct StorageClient {
    protected:
