@@ -5,6 +5,8 @@
 using namespace rack;
 
 struct ModularMenuItem : MenuItem {
+    // default menu item color
+    NVGcolor color = nvgRGB(0x28, 0xb0, 0xf3);
     Widget* tooltip = nullptr;
     std::function<Widget*()> tooltipCallback;
     std::function<bool()> visibleCallback;

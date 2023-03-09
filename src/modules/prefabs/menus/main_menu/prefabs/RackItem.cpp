@@ -1,6 +1,13 @@
 #include "RackItem.hpp"
+#include <library.hpp>
 #include <patch.hpp>
+#include "RackTooltip.hpp"
+#include "clients/library/LibraryClient.hpp"
+#include "modules/prefabs/menus/main_menu/modules/LibraryModuleItem.hpp"
+#include "modules/prefabs/menus/main_menu/sections/patches/RackContextMenu.hpp"
+#include "ui/VerticalGroup.hpp"
 #include "ui/menus/ModularMenuItem.hpp"
+#include "ui/menus/scrolling/helpers.hpp"
 #include "utils/patches.hpp"
 
 RackItem::RackItem(State* state) {
@@ -9,10 +16,7 @@ RackItem::RackItem(State* state) {
     this->rightText = "";
     this->source = "";
     this->disabled = true;
-    this->tooltip = new Tooltip;
-    APP->scene->addChild(tooltip);
-    tooltip->text = "";
-    tooltip->hide();
+    this->tooltip = nullptr;
 }
 
 RackItem::RackItem(State* state, Rack rack) {
@@ -21,10 +25,7 @@ RackItem::RackItem(State* state, Rack rack) {
     this->rightText = "";
     this->source = "";
     this->disabled = true;
-    this->tooltip = new Tooltip;
-    APP->scene->addChild(tooltip);
-    tooltip->text = "";
-    tooltip->hide();
+    this->tooltip = nullptr;
     setRack(rack);
 }
 
@@ -32,11 +33,13 @@ void RackItem::setRack(Rack rack) {
     // call other constructor
     this->rack = rack;
     this->text = rack.getDisplayName();
-    this->rightText = rack.isValid ? "" : "!";
-    this->disabled = !rack.isValid;
+    // warning unicode sign
+    this->rightText = rack.isValid ? "" : "⚠";
+    this->disabled = false;
     this->source = rack.source;
-    this->tooltip->text = "Missing modules: " + rack.missingReport();
-    this->tooltip->hide();
+    this->tooltipCallback = [this]() {
+        return createTooltip();
+    };
 }
 
 void RackItem::unsetRack() {
@@ -44,9 +47,17 @@ void RackItem::unsetRack() {
     this->text = "Not bound!";
     this->rightText = "";
     this->source = "";
-    this->tooltip->text = "";
     this->disabled = true;
-    this->tooltip->hide();
+    this->tooltipCallback = nullptr;
+    this->tooltip = nullptr;
+}
+
+Widget* RackItem::createTooltip() {
+    if (!rack.has_value()) {
+        return nullptr;
+    }
+
+    return new RackTooltip(*rack);
 }
 
 void RackItem::onButton(const event::Button& e) {
@@ -56,9 +67,12 @@ void RackItem::onButton(const event::Button& e) {
 
     e.consume(this);
 
-    if (this->disabled) {
-        return;
-    }
+    //    if (this->disabled) {
+    //        if (rack->missingModules.size() > 0 && e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_RIGHT) {
+    //            createChildMenu();
+    //        }
+    //        return;
+    //    }
 
     // get rack.filename's extension
     std::string extension = rack->filename.substr(rack->filename.find_last_of(".") + 1);
@@ -80,54 +94,30 @@ void RackItem::onButton(const event::Button& e) {
             e.consume(mw);
         }
     } else if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_RIGHT) {
-        // create a context menu with a single item to load the patch
-        if (extension != "vcv") {
-            return;
-        }
-
-        Menu* menu = createMenu();
-        auto item = new ModularMenuItem();
-        item->text = "Load patch";
-        item->buttonCallback = [this](const event::Button& e) {
-            MenuOverlay* overlay = getAncestorOfType<MenuOverlay>();
-            if (overlay) {
-                overlay->requestDelete();
-            }
-            APP->patch->load(rack->filename);
-            return true;
-        };
-        menu->addChild(item);
+        createContextMenu();
         return;
     }
 
-    // Close menu
-    MenuOverlay* overlay = getAncestorOfType<MenuOverlay>();
-    if (overlay) {
-        overlay->requestDelete();
+    if (e.isConsumed()) {
+        // Close menu
+        MenuOverlay* overlay = getAncestorOfType<MenuOverlay>();
+        if (overlay) {
+            overlay->requestDelete();
+        }
     }
 }
 
-void RackItem::onHover(const event::Hover& e) {
-    e.consume(this);
-}
-
-void RackItem::onEnter(const event::Enter& e) {
-    e.consume(this);
-    if (this->disabled) {
-        tooltip->show();
-    }
-}
-
-void RackItem::onLeave(const event::Leave& e) {
-    e.consume(this);
-    tooltip->hide();
+void RackItem::createContextMenu() {
+    ScrollableMenu* menu = createScrollableMenu();
+    auto contextMenu = new RackContextMenu(*rack);
+    menu->addMenuItem(contextMenu);
 }
 
 std::string RackItem::getRightText() {
     auto text = ModularItem::getRightText();
 
     if (rack.has_value()) {
-        text = rack->isValid ? text : text + "!";
+        text = rack->isValid ? text : text + "⚠";
     }
 
     return text;
@@ -141,14 +131,51 @@ void RackItem::step() {
         } else {
             text = rack->getDisplayName();
         }
-
-        this->disabled = !rack->isValid;
-        tooltip->box.pos = APP->scene->mousePos;
     }
 
     ModularItem::step();
 }
 
-void RackItem::draw(const DrawArgs& args) {
-    ModularItem::draw(args);
+ScrollableMenu* RackItem::createChildMenu() {
+    return nullptr;
+    // if the rack is not valid, create a child menu offering to download the missing modules
+    auto missing = rack->missingModules;
+    auto menu = createScrollableMenu();
+
+    auto label = new ModularItem();
+    label->text = "Subscribe to missing modules:";
+    label->disabled = true;
+    menu->addMenuItem(label);
+
+    // add a menu item for each missing module
+    for (auto pair : missing) {
+        auto pluginSlug = pair.first;
+        auto modules = pair.second;
+        auto item = new ModularItem();
+        item->text = pluginSlug;
+        item->rightTextCallback = [this, modules]() {
+            return std::to_string(modules.size());
+        };
+        item->childMenuCallback = [this, pluginSlug, modules](ModularItem* item, ScrollableMenu* menu) {
+            for (auto moduleSlug : modules) {
+                auto subItem = new ModularMenuItem();
+                subItem->text = moduleSlug;
+                subItem->buttonCallback = [this, subItem, pluginSlug, moduleSlug](const event::Button& e) {
+                    LibraryClient client;
+                    client.addModule(pluginSlug, moduleSlug);
+                    // remove moduleSlug from missingModules[pluginSlug]
+                    this->rack->missingModules[pluginSlug].erase(
+                        std::find(this->rack->missingModules[pluginSlug].begin(),
+                            this->rack->missingModules[pluginSlug].end(),
+                            moduleSlug));
+                    subItem->disabled = true;
+                    return false;
+                };
+                menu->addMenuItem(subItem);
+            }
+        };
+        menu->addMenuItem(item);
+    }
+
+    return menu;
 }

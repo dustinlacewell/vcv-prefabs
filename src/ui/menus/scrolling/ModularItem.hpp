@@ -15,6 +15,7 @@ struct ModularItem : ScrollableItem {
     std::function<bool(const event::Button& e)> rightClickCallback;
 
     ModularItem();
+    ~ModularItem();
     ScrollableMenu* createChildMenu() override;
 
     void setTooltip(Widget* tooltip);

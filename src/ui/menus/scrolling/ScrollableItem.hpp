@@ -7,6 +7,8 @@
 using namespace rack;
 
 struct ScrollableItem : widget::OpaqueWidget {
+    // default menu item color
+    NVGcolor color = nvgRGB(0xff, 0xff, 0xff);
     std::string text;
     std::string rightText;
     bool disabled = false;

@@ -19,11 +19,13 @@ struct ModularWidget : Widget {
 
     std::function<void(const event::DragStart& e)> dragStartCallback;
     std::function<void(const event::DragEnd& e)> dragEndCallback;
+    std::function<void(const DrawArgs& args)> drawCallback;
 
     ModularWidget();
 
     void setTooltip(Widget* tooltip);
     void step() override;
+    void draw(const DrawArgs& args) override;
     void onButton(const event::Button& e) override;
     void onHover(const event::Hover& e) override;
     void onEnter(const event::Enter& e) override;

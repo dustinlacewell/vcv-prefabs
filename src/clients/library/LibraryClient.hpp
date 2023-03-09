@@ -5,14 +5,13 @@
 
 struct LibraryClient {
    protected:
-    std::string username;
-    std::string password;
-    std::optional<std::string> token;
-
     Request makeRequest(std::string endpoint);
 
    public:
-    LibraryClient(std::string username, std::string password);
-    ~LibraryClient();
-    bool login();
+    //    bool login();
+    bool addModule(std::string pluginSlug, std::string moduleSlug);
+    bool removeModule(std::string pluginSlug, std::string moduleSlug);
+    bool subscribe(std::string pluginSlug);
+    bool unsubscribe(std::string pluginSlug);
+    void checkUpdates();
 };

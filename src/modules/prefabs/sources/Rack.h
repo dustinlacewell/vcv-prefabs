@@ -34,6 +34,7 @@ struct Rack {
 
     void fromJson(json_t* rootJ);
     std::string getDisplayName() const;
+    std::map<std::string, std::vector<std::string>> getMissingModules();
 };
 
 bool operator<(const Rack& lhs, const Rack& rhs);

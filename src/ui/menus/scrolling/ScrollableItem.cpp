@@ -1,14 +1,12 @@
 #include "ScrollableItem.hpp"
 #include "utils/logging.hpp"
 
-ScrollableItem::ScrollableItem()
-{
+ScrollableItem::ScrollableItem() {
     box.size.y = 24;
     box.size.x = bndLabelWidth(APP->window->vg, -1, text.c_str());
 }
 
-void ScrollableItem::draw(const DrawArgs& args)
-{
+void ScrollableItem::draw(const DrawArgs& args) {
     BNDwidgetState state = BND_DEFAULT;
 
     if (APP->event->hoveredWidget == this)
@@ -20,8 +18,30 @@ void ScrollableItem::draw(const DrawArgs& args)
         state = BND_ACTIVE;
 
     // Main text and background
-    if (!disabled)
-        bndMenuItem(args.vg, 0.0, 0.0, box.size.x, box.size.y, state, -1, text.c_str());
+    if (!disabled) {
+        //        bndMenuItem(args.vg, 0.0, 0.0, box.size.x, box.size.y, state, -1, text.c_str());
+        // replicate bndMenuItem but do it manually so we can use the text color
+        if (state != BND_DEFAULT) {
+            auto theme = bndGetTheme();
+            bndInnerBox(args.vg,
+                0,
+                0,
+                box.size.x,
+                box.size.y,
+                0,
+                0,
+                0,
+                0,
+                bndOffsetColor(theme->menuItemTheme.innerSelectedColor, theme->menuItemTheme.shadeTop),
+                bndOffsetColor(theme->menuItemTheme.innerSelectedColor, theme->menuItemTheme.shadeDown));
+            bndIconLabelValue(
+                args.vg, 0, 0, box.size.x, box.size.y, -1, color, BND_LEFT, BND_LABEL_FONT_SIZE, text.c_str(), NULL);
+            state = BND_ACTIVE;
+        }
+        bndIconLabelValue(
+            args.vg, 0.0, 0.0, box.size.x, box.size.y, -1, color, BND_LEFT, BND_LABEL_FONT_SIZE, text.c_str(), NULL);
+    }
+
     else
         bndMenuLabel(args.vg, 0.0, 0.0, box.size.x, box.size.y, -1, text.c_str());
 
@@ -42,8 +62,7 @@ void ScrollableItem::draw(const DrawArgs& args)
         NULL);
 }
 
-void ScrollableItem::step()
-{
+void ScrollableItem::step() {
     // Add 10 more pixels because measurements on high-DPI screens are sometimes too small for some reason
     const float rightPadding = 10.0;
     // HACK use APP->window->vg from the window.
@@ -58,8 +77,7 @@ void ScrollableItem::step()
     Widget::step();
 }
 
-void ScrollableItem::onEnter(const EnterEvent& e)
-{
+void ScrollableItem::onEnter(const EnterEvent& e) {
     // find ScrollableMenu ancestor
     //    auto parentMenu = dynamic_cast<ScrollableMenu*>(parent->parent->parent);
     auto parentMenu = getAncestorOfType<ScrollableMenu>();
@@ -97,8 +115,7 @@ void ScrollableItem::onEnter(const EnterEvent& e)
 
         if (ancestorMenu) {
             childMenu->box.pos.x = APP->scene->getAbsoluteOffset(ancestorMenu->box.getTopRight()).x;
-        }
-        else {
+        } else {
             ScrollableMenu* siblingMenu = NULL;
             bool skipped = false;
             // find the second to last ScrollableMenu child of overlay
@@ -115,8 +132,7 @@ void ScrollableItem::onEnter(const EnterEvent& e)
 
             if (siblingMenu) {
                 childMenu->box.pos.x = APP->scene->getAbsoluteOffset(siblingMenu->box.getTopRight()).x;
-            }
-            else {
+            } else {
                 childMenu->box.pos.x += this->box.size.x;
             }
         }
@@ -126,16 +142,14 @@ void ScrollableItem::onEnter(const EnterEvent& e)
     }
 }
 
-void ScrollableItem::onDragDrop(const DragDropEvent& e)
-{
+void ScrollableItem::onDragDrop(const DragDropEvent& e) {
     if (e.origin == this && !disabled) {
         int mods = APP->window->getMods();
         doAction((mods & RACK_MOD_MASK) != RACK_MOD_CTRL);
     }
 }
 
-void ScrollableItem::doAction(bool consume)
-{
+void ScrollableItem::doAction(bool consume) {
     widget::EventContext cAction;
     ActionEvent eAction;
     eAction.context = &cAction;

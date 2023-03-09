@@ -14,14 +14,44 @@ using path = ghc::filesystem::path;
 using namespace rack::plugin;
 
 Rack::Rack(std::string source, std::string group, std::string filename)
-    : source(source), group(group), filename(filename)
-{
+    : source(source), group(group), filename(filename) {
     this->name = removeUUID(path(filename).stem().string());
     this->slug = source + "/" + group + "/" + name;
 }
 
-void Rack::addPlugin(std::string pluginName, std::string moduleName)
-{
+std::map<std::string, std::vector<std::string>> Rack::getMissingModules() {
+    auto missing = std::map<std::string, std::vector<std::string>>();
+
+    for (auto pair : this->usedPlugins) {
+        auto pluginSlug = pair.first;
+        auto modules = pair.second;
+
+        auto plugin = rack::plugin::getPlugin(pluginSlug);
+
+        for (auto modulePair : modules) {
+            auto moduleSlug = modulePair.first;
+
+            if (!plugin) {
+                if (missing.find(pluginSlug) == missing.end()) {
+                    missing[pluginSlug] = std::vector<std::string>();
+                }
+                missing[pluginSlug].push_back(moduleSlug);
+            } else {
+                auto module = plugin->getModel(moduleSlug);
+                if (!module) {
+                    if (missing.find(pluginSlug) == missing.end()) {
+                        missing[pluginSlug] = std::vector<std::string>();
+                    }
+                    missing[pluginSlug].push_back(moduleSlug);
+                }
+            }
+        }
+    }
+
+    return missing;
+}
+
+void Rack::addPlugin(std::string pluginName, std::string moduleName) {
     bool found = false;
     for (Plugin* plugin : rack::plugin::plugins) {
         if (plugin->slug == pluginName) {
@@ -51,8 +81,7 @@ void Rack::addPlugin(std::string pluginName, std::string moduleName)
     this->usedPlugins[pluginName][moduleName]++;
 }
 
-std::string Rack::missingReport()
-{
+std::string Rack::missingReport() {
     auto reports = std::vector<std::string>();
 
     for (auto plugin : this->missingModules) {
@@ -68,8 +97,7 @@ std::string Rack::missingReport()
     return rack::string::join(reports, "; ");
 }
 
-void Rack::fromJson(json_t* rootJ)
-{
+void Rack::fromJson(json_t* rootJ) {
     json_t* modulesJ = json_object_get(rootJ, "modules");
     if (modulesJ) {
         for (int i = 0; i < json_array_size(modulesJ); i++) {
@@ -97,43 +125,35 @@ void Rack::fromJson(json_t* rootJ)
     }
 }
 
-std::string Rack::getDisplayName() const
-{
+std::string Rack::getDisplayName() const {
     if (this->displayName.has_value()) {
         return *(this->displayName);
-    }
-    else if (this->metadata.has_value()) {
+    } else if (this->metadata.has_value()) {
         return this->metadata->title;
     }
     return this->name;
 }
 
-bool operator<(const Rack& lhs, const Rack& rhs)
-{
+bool operator<(const Rack& lhs, const Rack& rhs) {
     return lhs.filename < rhs.filename;
 }
 
-bool operator>(const Rack& lhs, const Rack& rhs)
-{
+bool operator>(const Rack& lhs, const Rack& rhs) {
     return rhs < lhs;
 }
 
-bool operator<=(const Rack& lhs, const Rack& rhs)
-{
+bool operator<=(const Rack& lhs, const Rack& rhs) {
     return !(lhs > rhs);
 }
 
-bool operator>=(const Rack& lhs, const Rack& rhs)
-{
+bool operator>=(const Rack& lhs, const Rack& rhs) {
     return !(lhs < rhs);
 }
 
-bool operator==(const Rack& lhs, const Rack& rhs)
-{
+bool operator==(const Rack& lhs, const Rack& rhs) {
     return lhs.filename == rhs.filename;
 }
 
-bool operator!=(const Rack& lhs, const Rack& rhs)
-{
+bool operator!=(const Rack& lhs, const Rack& rhs) {
     return !(lhs == rhs);
 }

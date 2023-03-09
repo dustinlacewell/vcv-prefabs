@@ -2,6 +2,7 @@
 
 #include "SvgHelper.hpp"
 
+#include "clients/library/LibraryClient.hpp"
 #include "modules/prefabs/Prefabs.hpp"
 #include "modules/prefabs/ui/IconWidget.hpp"
 #include "ui/LedLabel.hpp"
@@ -10,6 +11,8 @@
 template struct PanelWidget<Prefabs>;
 
 struct PrefabsPanel : PanelWidget<Prefabs> {
+    LibraryClient libraryClient;
+
     std::optional<LedLabel*> prefabsLabel;
     std::optional<LedLabel*> patchesLabel;
     std::optional<LedLabel*> modulesLabel;

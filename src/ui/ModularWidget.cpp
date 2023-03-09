@@ -129,3 +129,11 @@ void ModularWidget::onDragEnd(const event::DragEnd& e) {
 
     Widget::onDragEnd(e);
 }
+
+void ModularWidget::draw(const DrawArgs& args) {
+    if (drawCallback) {
+        drawCallback(args);
+    }
+
+    Widget::draw(args);
+}

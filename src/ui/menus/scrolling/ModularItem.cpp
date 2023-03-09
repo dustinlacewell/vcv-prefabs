@@ -4,6 +4,12 @@ ModularItem::ModularItem() {
     childMenuCallback = nullptr;
 }
 
+ModularItem::~ModularItem() {
+    if (tooltip) {
+        tooltip->requestDelete();
+    }
+}
+
 ScrollableMenu* ModularItem::createChildMenu() {
     ScrollableMenu* menu = new ScrollableMenu;
 
@@ -81,7 +87,17 @@ void ModularItem::onButton(const event::Button& e) {
         }
     } else if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_RIGHT) {
         if (this->rightClickCallback) {
-            this->rightClickCallback(e);
+            if (this->rightClickCallback(e)) {
+                // Close menu
+                MenuOverlay* overlay = getAncestorOfType<MenuOverlay>();
+                if (overlay) {
+                    overlay->requestDelete();
+                }
+
+                if (e.isConsumed() && childMenuCallback) {
+                    e.unconsume();
+                }
+            }
         }
     }
 }

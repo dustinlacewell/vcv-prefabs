@@ -244,7 +244,8 @@ void PrefabsPanel::appendContextMenu(Menu* menu) {
             return false;
         }
         if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_LEFT) {
-            state->store.refresh();
+            libraryClient.removeModule("Ohmer", "PolaritySwitch");
+            //            state->store.refresh();
         }
 
         e.consume(refreshMenu);

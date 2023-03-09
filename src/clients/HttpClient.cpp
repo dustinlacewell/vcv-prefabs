@@ -4,28 +4,14 @@
 #include <thread>
 #include "utils/logging.hpp"
 
-// simple log function using cout, varargs to stderr
-
-void log(const char* fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    vfprintf(stderr, fmt, args);
-    // add newline
-    fprintf(stderr, "\n");
-    va_end(args);
-}
-
-static size_t writeStringCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
-{
+static size_t writeStringCallback(char* ptr, size_t size, size_t nmemb, void* userdata) {
     std::string* str = (std::string*)userdata;
     size_t len = size * nmemb;
     str->append(ptr, len);
     return len;
 }
 
-static int xferInfoCallback(void* clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow)
-{
+static int xferInfoCallback(void* clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
     float* progress = (float*)clientp;
     if (progress) {
         if (dltotal <= 0)
@@ -36,9 +22,8 @@ static int xferInfoCallback(void* clientp, curl_off_t dltotal, curl_off_t dlnow,
     return 0;
 }
 
-static CURL* createCurl(std::optional<std::string> token)
-{
-    log("Creating curl handle...");
+static CURL* createCurl(std::optional<std::string> token) {
+    CINFO("Creating curl handle...");
     CURL* curl = curl_easy_init();
 
     // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
@@ -65,14 +50,12 @@ static CURL* createCurl(std::optional<std::string> token)
 Response::Response() {}
 
 // Returns true if the HTTP status code is 2xx.
-bool Response::ok() const
-{
+bool Response::ok() const {
     return status >= 200 && status < 300;
 }
 
 // Returns the value of the HTTP header.
-std::optional<std::string> Response::getHeader(const std::string& key) const
-{
+std::optional<std::string> Response::getHeader(const std::string& key) const {
     auto it = headers.find(key);
     if (it == headers.end())
         return std::nullopt;
@@ -80,8 +63,7 @@ std::optional<std::string> Response::getHeader(const std::string& key) const
 }
 
 // Returns the value of the HTTP cookie.
-std::optional<std::string> Response::getCookie(const std::string& key) const
-{
+std::optional<std::string> Response::getCookie(const std::string& key) const {
     auto it = cookies.find(key);
     if (it == cookies.end())
         return std::nullopt;
@@ -89,8 +71,7 @@ std::optional<std::string> Response::getCookie(const std::string& key) const
 }
 
 // getParamString returns a url encoded string of the parameters.
-std::string getParamString(const std::map<std::string, std::string>& params)
-{
+std::string getParamString(const std::map<std::string, std::string>& params) {
     std::string paramsStr;
     for (auto it = params.begin(); it != params.end(); it++) {
         if (it != params.begin())
@@ -101,8 +82,7 @@ std::string getParamString(const std::map<std::string, std::string>& params)
 }
 
 // getCookieString returns a string of the cookies.
-std::string getCookieString(const std::map<std::string, std::string>& cookies)
-{
+std::string getCookieString(const std::map<std::string, std::string>& cookies) {
     std::string cookiesStr;
     for (auto it = cookies.begin(); it != cookies.end(); it++) {
         if (it != cookies.begin())
@@ -113,8 +93,7 @@ std::string getCookieString(const std::map<std::string, std::string>& cookies)
 }
 
 // getJsonString returns a string representation of the json object.
-std::string getJsonString(json_t* json)
-{
+std::string getJsonString(json_t* json) {
     char* jsonStr = json_dumps(json, JSON_COMPACT);
     std::string str = jsonStr;
     free(jsonStr);
@@ -122,8 +101,7 @@ std::string getJsonString(json_t* json)
 }
 
 // getJson returns a json object from a string.
-json_t* getJson(const std::string& str)
-{
+json_t* getJson(const std::string& str) {
     json_error_t error;
     json_t* json = json_loads(str.c_str(), 0, &error);
     if (!json) {
@@ -138,8 +116,7 @@ json_t* getJson(const std::string& str)
 
 // GET are sent as url encoded parameters in the URL.
 // POST are sent as JSON in the body.
-Response Request::send()
-{
+Response Request::send() {
     // use the old curl code as reference on how to use libcurl
 
     Response response;
@@ -153,36 +130,45 @@ Response Request::send()
     CURL* curl = createCurl(cert);
 
     // set the URL
-    log("Setting URL: %s", url.c_str());
+    CINFO("Setting URL: %s", url.c_str());
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
     // set the method
-    if (method == "GET") {
-        log("Setting GET method");
-
+    if (encoded) {
         // set the params
         if (!params.empty()) {
             std::string paramsStr = getParamString(params);
-            log("Setting params: %s", paramsStr.c_str());
+            CINFO("Setting params: %s", paramsStr.c_str());
             fullUrl += "?" + paramsStr;
             curl_easy_setopt(curl, CURLOPT_URL, fullUrl.c_str());
         }
-    }
-    else if (method == "POST") {
-        log("Setting POST method");
-        curl_easy_setopt(curl, CURLOPT_POST, true);
-
+    } else {
         // set the body
         if (!params.empty()) {
             for (auto it = params.begin(); it != params.end(); it++) {
-                log("Setting param: %s: %s", it->first.c_str(), it->second.c_str());
+                CINFO("Setting param: %s: %s", it->first.c_str(), it->second.c_str());
                 json_object_set_new(body, it->first.c_str(), json_string(it->second.c_str()));
             }
 
             bodyStr = json_dumps(body, JSON_COMPACT);
-            log("Setting body: %s", bodyStr);
+            CINFO("Setting body: %s", bodyStr);
             curl_easy_setopt(curl, CURLOPT_POSTFIELDS, bodyStr);
         }
+    }
+
+    // set the method
+    if (method == "GET") {
+        curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+    } else if (method == "POST") {
+        curl_easy_setopt(curl, CURLOPT_POST, 1L);
+    } else if (method == "PUT") {
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
+    } else if (method == "DELETE") {
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+    } else {
+        CINFO("Unknown method: %s", method.c_str());
+        response.status = 400;
+        return response;
     }
 
     // set the headers
@@ -190,7 +176,7 @@ Response Request::send()
 
     if (!headers.empty()) {
         for (auto it = headers.begin(); it != headers.end(); it++) {
-            log("Setting header: %s: %s", it->first.c_str(), it->second.c_str());
+            CINFO("Setting header: %s: %s", it->first.c_str(), it->second.c_str());
             std::string header = it->first + ": " + it->second;
             headerList = curl_slist_append(headerList, header.c_str());
         }
@@ -199,7 +185,7 @@ Response Request::send()
 
     // set the cookies
     if (!cookies.empty()) {
-        log("Setting cookies: %s", getCookieString(cookies).c_str());
+        CINFO("Setting cookies: %s", getCookieString(cookies).c_str());
         curl_easy_setopt(curl, CURLOPT_COOKIE, getCookieString(cookies).c_str());
     }
 
@@ -211,7 +197,7 @@ Response Request::send()
     CURLcode res = curl_easy_perform(curl);
 
     if (res != CURLE_OK) {
-        log("Could not download %s: %s", url.c_str(), curl_easy_strerror(res));
+        CINFO("Could not download %s: %s", url.c_str(), curl_easy_strerror(res));
         return response;
     }
 
@@ -234,7 +220,7 @@ Response Request::send()
 
     // get the body
     response.body = json_loads(resText.c_str(), 0, &response.json_error);
-    log("Got response: %s", resText.c_str());
+    CINFO("Got response: %s", resText.c_str());
 
     // cleanup
     if (bodyStr)
@@ -248,8 +234,7 @@ Response Request::send()
     return response;
 }
 
-DownloadResponse DownloadRequest::send()
-{
+DownloadResponse DownloadRequest::send() {
     DownloadResponse response;
 
     // setup curl
@@ -257,7 +242,7 @@ DownloadResponse DownloadRequest::send()
 
     FILE* file = std::fopen(filename.c_str(), "wb");
     if (!file) {
-        log("Could not open file %s for writing", filename.c_str());
+        CINFO("Could not open file %s for writing", filename.c_str());
         response.status = -1;
         response.error = "Could not open file for writing";
         return response;
@@ -265,7 +250,7 @@ DownloadResponse DownloadRequest::send()
 
     float progress = 0.f;
 
-    log("Setting URL: %s", url.c_str());
+    CINFO("Setting URL: %s", url.c_str());
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
@@ -279,7 +264,7 @@ DownloadResponse DownloadRequest::send()
     if (!headers.empty()) {
         struct curl_slist* headerList = NULL;
         for (auto it = headers.begin(); it != headers.end(); it++) {
-            log("Setting header: %s: %s", it->first.c_str(), it->second.c_str());
+            CINFO("Setting header: %s: %s", it->first.c_str(), it->second.c_str());
             std::string header = it->first + ": " + it->second;
             headerList = curl_slist_append(headerList, header.c_str());
         }
@@ -288,7 +273,7 @@ DownloadResponse DownloadRequest::send()
 
     // set the cookies
     if (!cookies.empty()) {
-        log("Setting cookies: %s", getCookieString(cookies).c_str());
+        CINFO("Setting cookies: %s", getCookieString(cookies).c_str());
         curl_easy_setopt(curl, CURLOPT_COOKIE, getCookieString(cookies).c_str());
     }
 
@@ -301,7 +286,7 @@ DownloadResponse DownloadRequest::send()
     std::fclose(file);
 
     if (res != CURLE_OK) {
-        log("Could not download %s: %s", url.c_str(), curl_easy_strerror(res));
+        CINFO("Could not download %s: %s", url.c_str(), curl_easy_strerror(res));
         response.status = -1;
         response.error = curl_easy_strerror(res);
         return response;
@@ -339,7 +324,7 @@ DownloadResponse DownloadRequest::send()
     //        }
     //    }
     //    catch (std::exception& e) {
-    //        log("Could not parse headers: %s", e.what());
+    //        CINFO("Could not parse headers: %s", e.what());
     //        response.status = -1;
     //        response.error = e.what();
     //        return response;

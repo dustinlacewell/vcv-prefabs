@@ -1,11 +1,11 @@
+#include <plugin.hpp>
 #include <tag.hpp>
 
 #include "LibraryModuleItem.hpp"
 #include "ui/ModelBox.hpp"
 #include "ui/VerticalGroup.hpp"
 
-LibraryModuleItem::LibraryModuleItem(Model* model)
-{
+void LibraryModuleItem::bindModel(Model* model) {
     this->model = model;
     this->text = model->name;
 
@@ -79,4 +79,24 @@ LibraryModuleItem::LibraryModuleItem(Model* model)
 
         return group;
     };
+}
+
+LibraryModuleItem::LibraryModuleItem(Model* model) {
+    this->bindModel(model);
+}
+
+LibraryModuleItem::LibraryModuleItem(std::string pluginSlug, std::string modelSlug) {
+    this->model = nullptr;
+
+    for (auto plugin : plugin::plugins) {
+        if (plugin->slug == pluginSlug) {
+            for (Model* model : plugin->models) {
+                if (model->slug == modelSlug) {
+                    this->bindModel(model);
+                    break;
+                }
+            }
+            break;
+        }
+    }
 }

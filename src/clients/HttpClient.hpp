@@ -43,14 +43,13 @@ std::string getCookieString(const std::map<std::string, std::string>& cookies);
 // Request represents an HTTP request.
 // Its send method returns a Response.
 
-// GET are sent as url encoded parameters in the URL.
-// POST are sent as JSON in the body.
-
 class Request {
    public:
     std::string url;
 
     std::string method = "GET";
+
+    bool encoded = false;
 
     std::map<std::string, std::string> headers;
 
