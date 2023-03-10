@@ -9,36 +9,20 @@ in {
     pname = "vcv-prefabs";
     version = "2.0.5";
 
+    # Make sure submodules are enabled
     src = std.incl self [
       "CMakeLists.txt"
       "RackSDK.cmake"
       "plugin.json"
-      "src"
       "efsw"
+      "date"
+      "vcv-svghelper"
+      "src"
       "res"
       "README.md"
     ];
 
-    hardeningDisable = ["format"];
-
-    prePatch = let
-      efsw = nixpkgs.fetchFromGitHub {
-        owner = "SpartanJ";
-        repo = "efsw";
-        rev = "3fd18f71b50befb8b1b3e221eceefc55500a2e75";
-        sha256 = "r2shLCb3puVjIy20qruu6bDZHNX/PE7Ztn1EdTGou2Y=";
-      };
-    in ''
-      mkdir -p efsw
-      cp -r ${efsw}/* efsw
-    '';
-
     cmakeFlags = let
-      # rack-sdk = nixpkgs.fetchzip {
-      #   name = "Rack-SDK-2.git.b04e4117.zip";
-      #   url = "https://vcvrack.com/downloads/Rack-SDK-2.git.b04e4117.zip";
-      #   sha256 = "mXH0deiy7OPmLx+XVMZd+KEzbVj5Vnr2G1niWcTHo/8=";
-      # };
       rack-sdk = nixpkgs.fetchzip {
         name = "Rack-SDK-2.2.3-lin-x64.zip";
         url = "https://vcvrack.com/downloads/Rack-SDK-2.2.3-lin-x64.zip";
